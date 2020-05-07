@@ -23,7 +23,7 @@ pub enum Dk {
     Zip {
         #[structopt(flatten)]
         args: ZipArgs,
-    }
+    },
 }
 
 #[derive(Debug, StructOpt)]
@@ -61,4 +61,6 @@ pub struct ReflectArgs {
 
 #[derive(Debug, StructOpt)]
 pub struct ZipArgs {
+    pub left: PathBuf,
+    pub right: PathBuf,
 }

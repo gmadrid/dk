@@ -3,7 +3,7 @@ use crate::dk::{
     chart::{Chart, Stitch},
 };
 use anyhow::{anyhow, Error};
-use fehler::{throws, throw};
+use fehler::{throw, throws};
 use std::path::PathBuf;
 
 #[throws]
@@ -27,7 +27,7 @@ pub fn trim(args: TrimArgs) {
             for col in left..=right {
                 let stitch = chart.stitch(row, col)?;
                 trimmed.set_stitch(trimmed_row, trimmed_col, stitch)?;
-                trimmed_col+= 1;
+                trimmed_col += 1;
             }
             trimmed_row += 1;
         }
