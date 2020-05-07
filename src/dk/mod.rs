@@ -6,8 +6,11 @@ mod thing;
 // TODO: can we get this out of the public scope?
 pub use args::Dk;
 
-pub use subcommands::image_convert;
-pub use subcommands::reflect;
-pub use subcommands::split;
-pub use subcommands::trim;
-pub use subcommands::zip;
+pub use subcommands::{
+    image_convert,
+    knitchart,
+    reflect,
+    split,
+    trim,
+    zip,
+};

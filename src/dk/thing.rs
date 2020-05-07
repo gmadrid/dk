@@ -4,9 +4,10 @@ use fehler::throws;
 use image::{Rgb, RgbImage};
 use imageproc::drawing::{draw_filled_circle_mut, draw_filled_rect_mut, draw_line_segment_mut};
 use imageproc::rect::Rect;
+use std::path::Path;
 
 #[throws]
-pub fn the_thing(filename: &str, chart: &Chart) {
+pub fn the_thing(filename: impl AsRef<Path>, chart: &Chart) {
     let cell_size = 15;
     let dot_size = 10;
     let background_color = Rgb([255, 255, 255]);

@@ -8,6 +8,10 @@ pub enum Dk {
         #[structopt(flatten)]
         args: ImageConvertArgs,
     },
+    Knitchart {
+        #[structopt(flatten)]
+        args: KnitchartArgs,
+    },
     Split {
         #[structopt(flatten)]
         args: SplitArgs,
@@ -34,6 +38,12 @@ pub struct ImageConvertArgs {
     #[structopt(long, short, help = "width in stitches of the final pattern")]
     pub width: Option<u16>,
 
+    #[structopt(parse(from_os_str))]
+    pub filenames: Vec<PathBuf>,
+}
+
+#[derive(Debug, StructOpt)]
+pub struct KnitchartArgs {
     #[structopt(parse(from_os_str))]
     pub filenames: Vec<PathBuf>,
 }
