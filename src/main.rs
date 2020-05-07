@@ -11,5 +11,8 @@ fn main() {
         dk::Dk::ImageConvert { args } => {
             dk::image_convert(args)?;
         }
+        dk::Dk::Split { args } => {
+            dk::split(args)?;
+        }
     };
 }

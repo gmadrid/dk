@@ -3,7 +3,7 @@ use fehler::{throw, throws};
 use image::GenericImageView;
 
 use crate::dk::chart::Stitch;
-use crate::dk::{args::ImageConvertArgs, chart::Chart, thing::the_thing};
+use crate::dk::{args::ImageConvertArgs, chart::Chart};
 use std::path::PathBuf;
 
 // returns (width, height).
@@ -31,7 +31,7 @@ fn image_size_preserving_ar(
 
 #[throws]
 pub fn image_convert(args: ImageConvertArgs) {
-    for filename in args.files {
+    for filename in args.filenames {
         let original_image = image::open(&filename)?;
 
         let (img_width, img_height) = original_image.dimensions();
@@ -89,8 +89,8 @@ pub fn image_convert(args: ImageConvertArgs) {
         }
 
         // unwrap: should be safe since we were able to open the file.
-        let outfilename = PathBuf::from(filename.file_name().unwrap()).with_extension("png");
-        the_thing(&outfilename.to_string_lossy(), &chart)?;
+//        let outfilename = PathBuf::from(filename.file_name().unwrap()).with_extension("png");
+//        the_thing(&outfilename.to_string_lossy(), &chart)?;
 
         let chartname = PathBuf::from(filename.file_name().unwrap()).with_extension("knit");
         chart.write_to_file(chartname)?;
