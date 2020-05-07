@@ -1,9 +1,9 @@
 use anyhow::{anyhow, Error};
 use fehler::{throw, throws};
-use std::fmt::{self, Debug, Display, Formatter};
-use std::io::{Write, BufRead, BufReader};
-use std::path::Path;
 use std::cmp::max;
+use std::fmt::{self, Debug, Display, Formatter};
+use std::io::{BufRead, BufReader, Write};
+use std::path::Path;
 
 #[derive(Copy, Clone)]
 pub enum Stitch {
@@ -101,7 +101,7 @@ impl Chart {
             for stitch in row {
                 write!(w, "{}", stitch)?;
             }
-            writeln!(w, "")?;
+            writeln!(w)?;
         }
     }
 
@@ -141,7 +141,7 @@ impl Chart {
                 throw!(anyhow!("Missing header: 'CHART' not found."));
             }
             if line.starts_with("CHART") {
-                break
+                break;
             }
         }
     }
@@ -160,7 +160,7 @@ impl Chart {
                 break;
             }
 
-            let stitch_str = line.trim_end_matches("\n");
+            let stitch_str = line.trim_end_matches('\n');
             max_cols = max(stitch_str.len(), max_cols);
 
             let mut current_row = Vec::new();
@@ -171,14 +171,22 @@ impl Chart {
                     '*' => current_row.push(Stitch::Purl),
 
                     // TODO: improve this with a line number.
-                    _ => throw!(anyhow!("Unexpected stitch character, '{}', in line, \"{}\"", ch, line)),
+                    _ => throw!(anyhow!(
+                        "Unexpected stitch character, '{}', in line, \"{}\"",
+                        ch,
+                        line
+                    )),
                 }
             }
             stitches.push(current_row);
         }
 
         let rows = stitches.len();
-        Chart { stitches, rows, cols: max_cols }
+        Chart {
+            stitches,
+            rows,
+            cols: max_cols,
+        }
     }
 
     #[throws]

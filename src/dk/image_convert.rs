@@ -13,18 +13,21 @@ fn image_size_preserving_ar(
     imagewidth: u32,
     imageheight: u32,
 ) -> (u32, u32) {
-    // If both args are provided, then just use the args.
-    if argheight.is_some() && argwidth.is_some() {
-        // unwrap: safe because is_some() was tested.
-        (u32::from(argwidth.unwrap()), u32::from(argheight.unwrap()))
-    } else if let Some(argwidth) = argwidth {
-        let ar = f64::from(imagewidth) / f64::from(imageheight);
-        (u32::from(argwidth), (f64::from(argwidth) / ar) as u32)
+    if let Some(argwidth) = argwidth {
+        if let Some(argheight) = argheight {
+            // Both args are provided, so just use the args.
+            (u32::from(argwidth), u32::from(argheight))
+        } else {
+            // Only got a width, so compute the height.
+            let ar = f64::from(imagewidth) / f64::from(imageheight);
+            (u32::from(argwidth), (f64::from(argwidth) / ar) as u32)
+        }
     } else if let Some(argheight) = argheight {
+        // Only got a height, so compute the width.
         let ar = f64::from(imagewidth) / f64::from(imageheight);
         (((ar * f64::from(argheight)) as u32), u32::from(argheight))
     } else {
-        // No args were provided, so use the image size.
+        // Didn't get either arg, so use values from the image.
         (imagewidth, imageheight)
     }
 }
@@ -89,8 +92,8 @@ pub fn image_convert(args: ImageConvertArgs) {
         }
 
         // unwrap: should be safe since we were able to open the file.
-//        let outfilename = PathBuf::from(filename.file_name().unwrap()).with_extension("png");
-//        the_thing(&outfilename.to_string_lossy(), &chart)?;
+        //        let outfilename = PathBuf::from(filename.file_name().unwrap()).with_extension("png");
+        //        the_thing(&outfilename.to_string_lossy(), &chart)?;
 
         let chartname = PathBuf::from(filename.file_name().unwrap()).with_extension("knit");
         chart.write_to_file(chartname)?;

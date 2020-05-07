@@ -1,7 +1,7 @@
-use anyhow::Error;
-use fehler::throws;
 use crate::dk::args::SplitArgs;
 use crate::dk::chart::Chart;
+use anyhow::Error;
+use fehler::throws;
 use std::path::PathBuf;
 
 #[throws]
@@ -36,7 +36,11 @@ pub fn split(args: SplitArgs) {
         let mut right_path = PathBuf::from(right_name);
         right_path.set_extension("knit");
 
-        println!("Writing to \"{}\" and \"{}\".", left_path.to_string_lossy(), right_path.to_string_lossy());
+        println!(
+            "Writing to \"{}\" and \"{}\".",
+            left_path.to_string_lossy(),
+            right_path.to_string_lossy()
+        );
         left_chart.write_to_file(left_path)?;
         right_chart.write_to_file(right_path)?;
     }

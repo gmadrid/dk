@@ -50,7 +50,10 @@ pub fn the_thing(filename: &str, chart: &Chart) {
 
                 draw_filled_circle_mut(
                     &mut img,
-                    ((cell_x + cell_size / 2) as i32, (cell_y + cell_size / 2) as i32),
+                    (
+                        (cell_x + cell_size / 2) as i32,
+                        (cell_y + cell_size / 2) as i32,
+                    ),
                     dot_size / 2,
                     grid_color,
                 );

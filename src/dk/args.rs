@@ -11,7 +11,7 @@ pub enum Dk {
     Split {
         #[structopt(flatten)]
         args: SplitArgs,
-    }
+    },
 }
 
 #[derive(Debug, StructOpt)]
@@ -28,6 +28,21 @@ pub struct ImageConvertArgs {
 
 #[derive(Debug, StructOpt)]
 pub struct SplitArgs {
+    #[structopt(parse(from_os_str))]
+    pub filenames: Vec<PathBuf>,
+}
+
+#[derive(Debug, StructOpt)]
+pub struct TrimArgs {
+    #[structopt(parse(from_os_str))]
+    pub filenames: Vec<PathBuf>,
+}
+
+#[derive(Debug, StructOpt)]
+pub struct ReflectArgs {
+    #[structopt(long)]
+    pub right_to_left: bool,
+
     #[structopt(parse(from_os_str))]
     pub filenames: Vec<PathBuf>,
 }
