@@ -10,3 +10,4 @@ pub use subcommands::image_convert;
 pub use subcommands::reflect;
 pub use subcommands::split;
 pub use subcommands::trim;
+pub use subcommands::zip;

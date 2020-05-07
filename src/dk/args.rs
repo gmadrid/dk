@@ -20,6 +20,10 @@ pub enum Dk {
         #[structopt(flatten)]
         args: ReflectArgs,
     },
+    Zip {
+        #[structopt(flatten)]
+        args: ZipArgs,
+    }
 }
 
 #[derive(Debug, StructOpt)]
@@ -53,4 +57,8 @@ pub struct ReflectArgs {
 
     #[structopt(parse(from_os_str))]
     pub filenames: Vec<PathBuf>,
+}
+
+#[derive(Debug, StructOpt)]
+pub struct ZipArgs {
 }

@@ -20,5 +20,8 @@ fn main() {
         dk::Dk::Reflect { args } => {
             dk::reflect(args)?;
         }
+        dk::Dk::Zip { args } => {
+            dk::zip(args)?;
+        }
     };
 }
