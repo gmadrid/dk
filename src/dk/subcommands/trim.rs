@@ -10,26 +10,20 @@ use std::path::PathBuf;
 pub fn trim(args: TrimArgs) {
     for filename in args.filenames {
         let chart = Chart::read_from_file(&filename)?;
-        dbg!(chart.rows());
-        dbg!(chart.cols());
 
-        let top = dbg!(find_top(&chart)?);
-        let bottom = dbg!(find_bottom(&chart)?);
-        let left = dbg!(find_left(&chart)?);
-        let right = dbg!(find_right(&chart)?);
+        let top = find_top(&chart)?;
+        let bottom = find_bottom(&chart)?;
+        let left =find_left(&chart)?;
+        let right = find_right(&chart)?;
 
         let mut trimmed = Chart::new(right - left + 1, bottom - top + 1);
-        dbg!(trimmed.rows());
-        dbg!(trimmed.cols());
-        let mut trimmed_row = 0;
-        for row in top..=bottom {
-            let mut trimmed_col = 0;
-            for col in left..=right {
+        //let mut trimmed_row = 0;
+        for (trimmed_row, row) in (top..=bottom).enumerate() {
+            //let mut trimmed_col = 0;
+            for (trimmed_col, col) in (left..=right).enumerate() {
                 let stitch = chart.stitch(row, col)?;
-                trimmed.set_stitch(trimmed_row, trimmed_col, stitch)?;
-                trimmed_col += 1;
+                trimmed.set_stitch(trimmed_row as u16, trimmed_col as u16, stitch)?;
             }
-            trimmed_row += 1;
         }
 
         let mut new_name = filename.file_stem().unwrap().to_owned();

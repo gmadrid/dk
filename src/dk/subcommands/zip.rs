@@ -26,12 +26,10 @@ pub fn zip(args: ZipArgs) {
                 } else {
                     left_chart.stitch(row, col)?
                 }
+            } else if row >= right_chart.rows() {
+                Stitch::Knit
             } else {
-                if row >= right_chart.rows() {
-                    Stitch::Knit
-                } else {
-                    right_chart.stitch(row, col - left_chart.cols())?
-                }
+                right_chart.stitch(row, col - left_chart.cols())?
             };
 
             zipped.set_stitch(row, col, stitch)?;
@@ -41,7 +39,7 @@ pub fn zip(args: ZipArgs) {
     let path = args
         .output
         .map(|p| {
-            let mut pb = p.clone();
+            let mut pb = p;
             pb.set_extension("knit");
             pb
         })

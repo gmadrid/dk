@@ -1,9 +1,8 @@
-use crate::dk::args::{KnitchartArgs};
+use crate::dk::args::KnitchartArgs;
 use crate::dk::chart::Chart;
+use crate::dk::thing::the_thing;
 use anyhow::Error;
 use fehler::throws;
-use std::path::PathBuf;
-use crate::dk::thing::the_thing;
 
 #[throws]
 pub fn knitchart(args: KnitchartArgs) {
