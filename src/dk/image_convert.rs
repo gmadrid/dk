@@ -4,6 +4,7 @@ use image::GenericImageView;
 
 use crate::dk::chart::Stitch;
 use crate::dk::{args::ImageConvertArgs, chart::Chart, thing::the_thing};
+use std::path::PathBuf;
 
 // returns (width, height).
 fn image_size_preserving_ar(
@@ -87,7 +88,9 @@ pub fn image_convert(args: ImageConvertArgs) {
             chart.set_stitch(row as u16, col as u16, stitch)?;
         }
 
-        the_thing("foobar.png", &chart)?;
+        // unwrap: should be safe since we were able to open the file.
+        let outfilename = PathBuf::from(filename.file_name().unwrap()).with_extension("png");
+        the_thing(&outfilename.to_string_lossy(), &chart)?;
     }
 }
 
