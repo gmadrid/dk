@@ -10,7 +10,6 @@ fn main() {
     match subcommand {
         dk::Dk::ImageConvert { args } => {
             dk::image_convert(args)?;
-        },
+        }
     };
-    println!("Hello, world!");
 }

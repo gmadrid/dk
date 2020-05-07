@@ -1,5 +1,5 @@
 use anyhow::{anyhow, Error};
-use fehler::{throws, throw};
+use fehler::{throw, throws};
 use std::fmt::{self, Debug};
 
 #[derive(Copy, Clone)]

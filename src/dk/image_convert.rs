@@ -1,10 +1,9 @@
 use anyhow::{anyhow, Error};
 use fehler::{throw, throws};
 use image::GenericImageView;
-use std::path::PathBuf;
 
-use crate::dk::{args::ImageConvertArgs, chart::Chart, thing::the_thing};
 use crate::dk::chart::Stitch;
+use crate::dk::{args::ImageConvertArgs, chart::Chart, thing::the_thing};
 
 // returns (width, height).
 fn image_size_preserving_ar(
@@ -36,7 +35,7 @@ pub fn image_convert(args: ImageConvertArgs) {
 
         let (img_width, img_height) = original_image.dimensions();
         let (chart_width, chart_height) =
-            image_size_preserving_ar(args.width, args.height, img_width, img_height);
+            dbg!(image_size_preserving_ar(args.width, args.height, img_width, img_height));
 
         // TODO: range check the chart size.
         // ensure!
@@ -80,7 +79,11 @@ pub fn image_convert(args: ImageConvertArgs) {
             // TODO: maybe consilidate these two loops.
             // - prevents creating an extra image, and
             // - makes this code a little more clear.
-            let stitch = if pixel.0[0] == 0 { Stitch::Purl } else { Stitch::Knit };
+            let stitch = if pixel.0[0] == 0 {
+                Stitch::Purl
+            } else {
+                Stitch::Knit
+            };
             chart.set_stitch(row as u16, col as u16, stitch)?;
         }
 

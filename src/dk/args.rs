@@ -1,5 +1,5 @@
-use structopt::StructOpt;
 use std::path::PathBuf;
+use structopt::StructOpt;
 
 #[derive(Debug, StructOpt)]
 #[structopt(name = "dk", about = "A tool for making double-knitting patterns.")]
@@ -11,7 +11,7 @@ pub enum Dk {
 }
 
 #[derive(Debug, StructOpt)]
-pub struct ImageConvertArgs{
+pub struct ImageConvertArgs {
     #[structopt(long, short, help = "height in stitches of the final pattern")]
     pub height: Option<u16>,
 

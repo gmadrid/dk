@@ -11,5 +11,6 @@ fehler = { path = "../fehler" }
 anyhow = "1.0.28"
 structopt = "0.3.14"
 image = "0.23.4"
-graphics_buffer = "0.7.3"
-piston2d-graphics = "0.36.0"
+imageproc = "0.20.0"
+#graphics_buffer = "0.7.3"
+#piston2d-graphics = "0.36.0"
