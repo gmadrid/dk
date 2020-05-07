@@ -1,11 +1,12 @@
 mod args;
 mod chart;
-mod image_convert;
-mod split;
+mod subcommands;
 mod thing;
 
 // TODO: can we get this out of the public scope?
 pub use args::Dk;
 
-pub use image_convert::image_convert;
-pub use split::split;
+pub use subcommands::image_convert;
+pub use subcommands::reflect;
+pub use subcommands::split;
+pub use subcommands::trim;

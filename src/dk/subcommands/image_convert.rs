@@ -102,7 +102,7 @@ pub fn image_convert(args: ImageConvertArgs) {
 
 #[cfg(test)]
 mod test {
-    use crate::dk::image_convert::image_size_preserving_ar;
+    use super::*;
 
     #[test]
     fn test_sizes() {

@@ -12,6 +12,14 @@ pub enum Dk {
         #[structopt(flatten)]
         args: SplitArgs,
     },
+    Trim {
+        #[structopt(flatten)]
+        args: TrimArgs,
+    },
+    Reflect {
+        #[structopt(flatten)]
+        args: ReflectArgs,
+    },
 }
 
 #[derive(Debug, StructOpt)]

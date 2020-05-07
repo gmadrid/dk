@@ -14,5 +14,11 @@ fn main() {
         dk::Dk::Split { args } => {
             dk::split(args)?;
         }
+        dk::Dk::Trim { args } => {
+            dk::trim(args)?;
+        }
+        dk::Dk::Reflect { args } => {
+            dk::reflect(args)?;
+        }
     };
 }
