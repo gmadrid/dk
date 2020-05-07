@@ -36,7 +36,7 @@ pub fn image_convert(args: ImageConvertArgs) {
 
         let (img_width, img_height) = original_image.dimensions();
         let (chart_width, chart_height) =
-            dbg!(image_size_preserving_ar(args.width, args.height, img_width, img_height));
+            image_size_preserving_ar(args.width, args.height, img_width, img_height);
 
         // TODO: range check the chart size.
         // ensure!
@@ -91,6 +91,9 @@ pub fn image_convert(args: ImageConvertArgs) {
         // unwrap: should be safe since we were able to open the file.
         let outfilename = PathBuf::from(filename.file_name().unwrap()).with_extension("png");
         the_thing(&outfilename.to_string_lossy(), &chart)?;
+
+        let chartname = PathBuf::from(filename.file_name().unwrap()).with_extension("knit");
+        chart.write_to_file(chartname)?;
     }
 }
 

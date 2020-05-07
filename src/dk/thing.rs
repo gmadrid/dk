@@ -26,8 +26,8 @@ pub fn the_thing(filename: &str, chart: &Chart) {
         let row_offset = (row * cell_size) as f32;
         draw_line_segment_mut(
             &mut img,
-            (0.0, row_offset),
-            ((cols * cell_size) as f32, row_offset),
+            (0.0 - 0.5, row_offset - 0.5),
+            ((cols * cell_size) as f32 - 0.5, row_offset - 0.5),
             grid_color,
         );
     }
@@ -36,8 +36,8 @@ pub fn the_thing(filename: &str, chart: &Chart) {
         let col_offset = (col * cell_size) as f32;
         draw_line_segment_mut(
             &mut img,
-            (col_offset, 0.0),
-            (col_offset, (rows * cell_size) as f32),
+            (col_offset - 0.5, 0.0 - 0.5),
+            (col_offset - 0.5, (rows * cell_size) as f32 - 0.5),
             grid_color,
         );
     }

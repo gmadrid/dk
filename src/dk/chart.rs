@@ -1,6 +1,8 @@
 use anyhow::{anyhow, Error};
 use fehler::{throw, throws};
-use std::fmt::{self, Debug};
+use std::fmt::{self, Debug, Display, Formatter};
+use std::io::Write;
+use std::path::Path;
 
 #[derive(Copy, Clone)]
 pub enum Stitch {
@@ -24,6 +26,13 @@ impl Debug for Stitch {
         };
 
         write!(f, "{}", ch)
+    }
+}
+
+impl Display for Stitch {
+    fn fmt(&self, f: &mut Formatter) -> Result<(), std::fmt::Error> {
+        // Display and Debug are the same.
+        write!(f, "{:?}", self)
     }
 }
 
@@ -56,6 +65,51 @@ impl Chart {
 
     pub fn cols(&self) -> u16 {
         self.cols as u16
+    }
+
+    #[throws]
+    pub fn write_to_file(&self, path: impl AsRef<Path>) {
+        let mut writer = std::fs::File::create(path)?;
+        self.write(&mut writer)?;
+    }
+
+    #[throws]
+    pub fn write<W>(&self, w: &mut W)
+    where
+        W: Write,
+    {
+        self.write_header(w)?;
+        self.write_stitches(w)?;
+        self.write_footer(w)?;
+    }
+
+    #[throws]
+    fn write_header<W>(&self, w: &mut W)
+    where
+        W: Write,
+    {
+        write!(w, "CHART\n")?
+    }
+
+    #[throws]
+    fn write_stitches<W>(&self, w: &mut W)
+    where
+        W: Write,
+    {
+        for row in &self.stitches {
+            for stitch in row {
+                write!(w, "{}", stitch)?;
+            }
+            write!(w, "\n")?;
+        }
+    }
+
+    #[throws]
+    fn write_footer<W>(&self, _w: &mut W)
+    where
+        W: Write,
+    {
+        // currently a no-op.
     }
 
     #[throws]
