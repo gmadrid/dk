@@ -13,13 +13,11 @@ pub fn trim(args: TrimArgs) {
 
         let top = find_top(&chart)?;
         let bottom = find_bottom(&chart)?;
-        let left =find_left(&chart)?;
+        let left = find_left(&chart)?;
         let right = find_right(&chart)?;
 
         let mut trimmed = Chart::new(right - left + 1, bottom - top + 1);
-        //let mut trimmed_row = 0;
         for (trimmed_row, row) in (top..=bottom).enumerate() {
-            //let mut trimmed_col = 0;
             for (trimmed_col, col) in (left..=right).enumerate() {
                 let stitch = chart.stitch(row, col)?;
                 trimmed.set_stitch(trimmed_row as u16, trimmed_col as u16, stitch)?;
