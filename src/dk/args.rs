@@ -61,6 +61,9 @@ pub struct ReflectArgs {
 
 #[derive(Debug, StructOpt)]
 pub struct ZipArgs {
+    #[structopt(short, long)]
+    pub output: Option<PathBuf>,
+
     pub left: PathBuf,
     pub right: PathBuf,
 }

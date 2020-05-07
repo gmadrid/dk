@@ -38,5 +38,13 @@ pub fn zip(args: ZipArgs) {
         }
     }
 
-    zipped.write_to_file("zipped.knit")?;
+    let path = args
+        .output
+        .map(|p| {
+            let mut pb = p.clone();
+            pb.set_extension("knit");
+            pb
+        })
+        .unwrap_or_else(|| PathBuf::from("zipped.knit"));
+    zipped.write_to_file(path)?;
 }
