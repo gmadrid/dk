@@ -1,9 +1,11 @@
-use crate::dk::args::ZipArgs;
-use crate::dk::chart::{Chart, Stitch};
+use crate::dk::{
+    args::ZipArgs,
+    chart::{Chart, Stitch},
+};
 use anyhow::Error;
 use fehler::throws;
-use std::path::PathBuf;
 use std::cmp::max;
+use std::path::PathBuf;
 
 #[throws]
 pub fn zip(args: ZipArgs) {
