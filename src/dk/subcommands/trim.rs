@@ -1,36 +1,32 @@
+use crate::dk::subcommands::pipe_chart;
 use crate::dk::{
     args::TrimArgs,
     chart::{Chart, Stitch},
 };
 use anyhow::{anyhow, Error};
 use fehler::{throw, throws};
-use std::path::PathBuf;
 
 #[throws]
 pub fn trim(args: TrimArgs) {
-    for filename in args.filenames {
-        let chart = Chart::read_from_file(&filename)?;
+    pipe_chart(args.in_file_name, args.out_file_name, trim_chart)?;
+}
 
-        let top = find_top(&chart)?;
-        let bottom = find_bottom(&chart)?;
-        let left = find_left(&chart)?;
-        let right = find_right(&chart)?;
+#[throws]
+fn trim_chart(chart: &Chart) -> Chart {
+    let top = find_top(&chart)?;
+    let bottom = find_bottom(&chart)?;
+    let left = find_left(&chart)?;
+    let right = find_right(&chart)?;
 
-        let mut trimmed = Chart::new(right - left + 1, bottom - top + 1);
-        for (trimmed_row, row) in (top..=bottom).enumerate() {
-            for (trimmed_col, col) in (left..=right).enumerate() {
-                let stitch = chart.stitch(row, col)?;
-                trimmed.set_stitch(trimmed_row as u16, trimmed_col as u16, stitch)?;
-            }
+    let mut trimmed = Chart::new(right - left + 1, bottom - top + 1);
+    for (trimmed_row, row) in (top..=bottom).enumerate() {
+        for (trimmed_col, col) in (left..=right).enumerate() {
+            let stitch = chart.stitch(row, col)?;
+            trimmed.set_stitch(trimmed_row as u16, trimmed_col as u16, stitch)?;
         }
-
-        let mut new_name = filename.file_stem().unwrap().to_owned();
-        new_name.push("-trimmed");
-        let mut path = PathBuf::from(new_name);
-        path.set_extension("knit");
-
-        trimmed.write_to_file(&path)?;
     }
+
+    trimmed
 }
 
 #[throws]
@@ -50,7 +46,7 @@ fn find_top(chart: &Chart) -> u16 {
         }
     }
 
-    throw!(anyhow!("Cannot trim an empty chart!"));
+    throw!(anyhow!("Cannot trim an empty chart!"))
 }
 
 #[throws]
@@ -70,7 +66,7 @@ fn find_bottom(chart: &Chart) -> u16 {
         }
     }
 
-    throw!(anyhow!("Cannot trim an empty chart."));
+    throw!(anyhow!("Cannot trim an empty chart."))
 }
 
 #[throws]
@@ -90,7 +86,7 @@ fn find_left(chart: &Chart) -> u16 {
         }
     }
 
-    throw!(anyhow!("Cannot trim an empty chart"));
+    throw!(anyhow!("Cannot trim an empty chart"))
 }
 
 #[throws]
@@ -110,5 +106,5 @@ fn find_right(chart: &Chart) -> u16 {
         }
     }
 
-    throw!(anyhow!("Cannot trim an empty chart"));
+    throw!(anyhow!("Cannot trim an empty chart"))
 }

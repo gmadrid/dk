@@ -56,8 +56,11 @@ pub struct SplitArgs {
 
 #[derive(Debug, StructOpt)]
 pub struct TrimArgs {
+    #[structopt(long, short, parse(from_os_str))]
+    pub out_file_name: Option<PathBuf>,
+
     #[structopt(parse(from_os_str))]
-    pub filenames: Vec<PathBuf>,
+    pub in_file_name: Option<PathBuf>,
 }
 
 #[derive(Debug, StructOpt)]
@@ -65,8 +68,11 @@ pub struct ReflectArgs {
     #[structopt(long)]
     pub right_to_left: bool,
 
+    #[structopt(long, short, parse(from_os_str))]
+    pub out_file_name: Option<PathBuf>,
+
     #[structopt(parse(from_os_str))]
-    pub filenames: Vec<PathBuf>,
+    pub in_file_name: Option<PathBuf>,
 }
 
 #[derive(Debug, StructOpt)]

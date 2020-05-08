@@ -91,10 +91,6 @@ pub fn image_convert(args: ImageConvertArgs) {
             chart.set_stitch(row as u16, col as u16, stitch)?;
         }
 
-        // unwrap: should be safe since we were able to open the file.
-        //        let outfilename = PathBuf::from(filename.file_name().unwrap()).with_extension("png");
-        //        the_thing(&outfilename.to_string_lossy(), &chart)?;
-
         let chartname = PathBuf::from(filename.file_name().unwrap()).with_extension("knit");
         chart.write_to_file(chartname)?;
     }

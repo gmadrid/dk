@@ -75,28 +75,19 @@ impl Chart {
     }
 
     #[throws]
-    pub fn write<W>(&self, w: &mut W)
-    where
-        W: Write,
-    {
+    pub fn write(&self, w: &mut dyn Write) {
         self.write_header(w)?;
         self.write_stitches(w)?;
         self.write_footer(w)?;
     }
 
     #[throws]
-    fn write_header<W>(&self, w: &mut W)
-    where
-        W: Write,
-    {
+    fn write_header(&self, w: &mut dyn Write) {
         writeln!(w, "CHART")?
     }
 
     #[throws]
-    fn write_stitches<W>(&self, w: &mut W)
-    where
-        W: Write,
-    {
+    fn write_stitches(&self, w: &mut dyn Write) {
         for row in &self.stitches {
             for stitch in row {
                 write!(w, "{}", stitch)?;
@@ -106,10 +97,7 @@ impl Chart {
     }
 
     #[throws]
-    fn write_footer<W>(&self, _w: &mut W)
-    where
-        W: Write,
-    {
+    fn write_footer(&self, _w: &mut dyn Write) {
         // currently a no-op.
     }
 
