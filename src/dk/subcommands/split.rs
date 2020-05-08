@@ -1,26 +1,10 @@
-use crate::dk::args::{LeftArgs, SplitArgs, RightArgs};
+use crate::dk::args::{LeftArgs, RightArgs, SplitArgs};
 use crate::dk::chart::Chart;
 use crate::dk::subcommands::{chart_in, pipe_chart};
+use crate::dk::util::make_knit_pathbuf;
 use anyhow::{anyhow, Error};
 use fehler::throws;
 use std::path::{Path, PathBuf};
-
-/// Makes a pathbuf from `path` but with the `.knit` extension.
-/// If `suffix` is provided, then append it to the file stem also.
-#[throws]
-fn make_knit_pathbuf(path: impl AsRef<Path>, suffix: Option<&str>) -> PathBuf {
-    let mut name = path
-        .as_ref()
-        .file_stem()
-        .ok_or_else(|| anyhow!("Pathbuf has no filename part: {}", path.as_ref().display()))?;
-    let mut owned = name.to_owned();
-    if let Some(suffix) = suffix {
-        owned.push(suffix);
-    }
-    let mut result = PathBuf::from(owned);
-    result.set_extension("knit");
-    result
-}
 
 #[throws]
 pub fn left(args: LeftArgs) {
@@ -43,10 +27,10 @@ pub fn split(args: SplitArgs) {
     // If the out stem is provided, use it. Fallback on the input file name.
     // If that's not present (we read from stdin), then just pick "split".
     let stem = args
-        .out_file_stem.as_ref()
+        .out_file_stem
+        .as_ref()
         .or_else(|| args.in_file_name.as_ref())
-        .map_or_else(|| PathBuf::from("split"),
-        |p| p.to_owned());
+        .map_or_else(|| PathBuf::from("split"), |p| p.to_owned());
 
     // TODO: check for existing filenames.
 
