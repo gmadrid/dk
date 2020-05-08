@@ -15,13 +15,13 @@ use crate::dk::chart::Chart;
 pub use image_convert::image_convert; // image filename, outfile
 pub use knitchart::knitchart; // infile, image filename
 pub use reflect::reflect;
-pub use split::split; // infile, (outfile, outfile)
+pub use split::{left, right, split};
 pub use trim::trim;
 pub use zip::zip; // (infile, infile), outfile
-                  // pub use zip::reflectzip // infile, outfile [2 possibilities]
+                  // pub use zip::mirror // infile, outfile [2 possibilities]
 
 #[throws]
-fn pipe_in(path: Option<PathBuf>) -> Box<dyn Read> {
+fn pipe_in(path: &Option<PathBuf>) -> Box<dyn Read> {
     let pipe: Box<dyn Read> = if let Some(p) = path {
         Box::new(std::fs::File::open(p)?)
     } else {
@@ -31,7 +31,7 @@ fn pipe_in(path: Option<PathBuf>) -> Box<dyn Read> {
 }
 
 #[throws]
-fn pipe_out(path: Option<PathBuf>) -> Box<dyn Write> {
+fn pipe_out(path: &Option<PathBuf>) -> Box<dyn Write> {
     let pipe: Box<dyn Write> = if let Some(p) = path {
         Box::new(std::fs::File::create(p)?)
     } else {
@@ -45,8 +45,8 @@ fn pipe_command(
     out_path: Option<PathBuf>,
     cmd: impl FnOnce(&mut dyn Read, &mut dyn Write) -> Result<()>,
 ) -> Result<()> {
-    let mut rdr = pipe_in(in_path)?;
-    let mut wtr = pipe_out(out_path)?;
+    let mut rdr = pipe_in(&in_path)?;
+    let mut wtr = pipe_out(&out_path)?;
     cmd(rdr.as_mut(), wtr.as_mut())
 }
 
@@ -60,4 +60,16 @@ fn pipe_chart(
         let out_chart = cmd(&chart)?;
         out_chart.write(wtr)
     })
+}
+
+fn chart_in(in_path: &Option<PathBuf>) -> Result<Chart> {
+    let rdr = pipe_in(in_path)?;
+    let chart = Chart::read(&mut BufReader::new(rdr))?;
+    Ok(chart)
+}
+
+fn chart_out(out_path: &Option<PathBuf>, chart: &Chart) -> Result<()> {
+    let mut wtr = pipe_out(out_path)?;
+    chart.write(&mut wtr)?;
+    Ok(())
 }

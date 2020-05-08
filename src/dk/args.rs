@@ -12,6 +12,14 @@ pub enum Dk {
         #[structopt(flatten)]
         args: KnitchartArgs,
     },
+    Left {
+        #[structopt(flatten)]
+        args: LeftArgs,
+    },
+    Right {
+        #[structopt(flatten)]
+        args: RightArgs,
+    },
     Split {
         #[structopt(flatten)]
         args: SplitArgs,
@@ -43,6 +51,24 @@ pub struct ImageConvertArgs {
 }
 
 #[derive(Debug, StructOpt)]
+pub struct LeftArgs {
+    #[structopt(long, short, parse(from_os_str))]
+    pub out_file_name: Option<PathBuf>,
+
+    #[structopt(parse(from_os_str))]
+    pub in_file_name: Option<PathBuf>,
+}
+
+#[derive(Debug, StructOpt)]
+pub struct RightArgs {
+    #[structopt(long, short, parse(from_os_str))]
+    pub out_file_name: Option<PathBuf>,
+
+    #[structopt(parse(from_os_str))]
+    pub in_file_name: Option<PathBuf>,
+}
+
+#[derive(Debug, StructOpt)]
 pub struct KnitchartArgs {
     #[structopt(parse(from_os_str))]
     pub filenames: Vec<PathBuf>,
@@ -51,7 +77,10 @@ pub struct KnitchartArgs {
 #[derive(Debug, StructOpt)]
 pub struct SplitArgs {
     #[structopt(parse(from_os_str))]
-    pub filenames: Vec<PathBuf>,
+    pub in_file_name: Option<PathBuf>,
+
+    #[structopt(long="output_stem", short="o", parse(from_os_str))]
+    pub out_file_stem: Option<PathBuf>,
 }
 
 #[derive(Debug, StructOpt)]

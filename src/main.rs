@@ -14,6 +14,12 @@ fn main() {
         dk::Dk::Knitchart { args } => {
             dk::knitchart(args)?;
         }
+        dk::Dk::Left { args } => {
+            dk::left(args)?;
+        }
+        dk::Dk::Right { args } => {
+            dk::right(args)?;
+        }
         dk::Dk::Split { args } => {
             dk::split(args)?;
         }

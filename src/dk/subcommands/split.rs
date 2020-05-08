@@ -1,47 +1,82 @@
-use crate::dk::args::SplitArgs;
+use crate::dk::args::{LeftArgs, SplitArgs, RightArgs};
 use crate::dk::chart::Chart;
-use anyhow::Error;
+use crate::dk::subcommands::{chart_in, pipe_chart};
+use anyhow::{anyhow, Error};
 use fehler::throws;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
+
+/// Makes a pathbuf from `path` but with the `.knit` extension.
+/// If `suffix` is provided, then append it to the file stem also.
+#[throws]
+fn make_knit_pathbuf(path: impl AsRef<Path>, suffix: Option<&str>) -> PathBuf {
+    let mut name = path
+        .as_ref()
+        .file_stem()
+        .ok_or_else(|| anyhow!("Pathbuf has no filename part: {}", path.as_ref().display()))?;
+    let mut owned = name.to_owned();
+    if let Some(suffix) = suffix {
+        owned.push(suffix);
+    }
+    let mut result = PathBuf::from(owned);
+    result.set_extension("knit");
+    result
+}
+
+#[throws]
+pub fn left(args: LeftArgs) {
+    pipe_chart(args.in_file_name, args.out_file_name, |chart| {
+        Ok(split_chart(chart)?.0)
+    })?;
+}
+
+#[throws]
+pub fn right(args: RightArgs) {
+    pipe_chart(args.in_file_name, args.out_file_name, |chart| {
+        Ok(split_chart(chart)?.1)
+    })?;
+}
 
 #[throws]
 pub fn split(args: SplitArgs) {
-    for filename in args.filenames {
-        let chart = Chart::read_from_file(&filename)?;
+    let chart = chart_in(&args.in_file_name)?;
 
-        // TODO: deal with odd widths.
-        let split_point = chart.cols() / 2;
+    // If the out stem is provided, use it. Fallback on the input file name.
+    // If that's not present (we read from stdin), then just pick "split".
+    let stem = args
+        .out_file_stem.as_ref()
+        .or_else(|| args.in_file_name.as_ref())
+        .map_or_else(|| PathBuf::from("split"),
+        |p| p.to_owned());
 
-        // TODO: deal with charts with variable number of columns per row.
-        //       perhaps pad the rows after reading in the file?
-        let mut left_chart = Chart::new(split_point, chart.rows());
-        let mut right_chart = Chart::new(chart.cols() - split_point, chart.rows());
+    // TODO: check for existing filenames.
 
-        for row in 0..chart.rows() {
-            for col in 0..split_point {
-                left_chart.set_stitch(row, col, chart.stitch(row, col)?)?;
-            }
+    let left_file_name = make_knit_pathbuf(&stem, Some("-left"))?;
+    let right_file_name = make_knit_pathbuf(&stem, Some("-right"))?;
 
-            for col in split_point..chart.cols() {
-                right_chart.set_stitch(row, col - split_point, chart.stitch(row, col)?)?;
-            }
+    let (left_chart, right_chart) = split_chart(&chart)?;
+    left_chart.write_to_file(left_file_name)?;
+    right_chart.write_to_file(right_file_name)?;
+}
+
+#[throws]
+pub fn split_chart(chart: &Chart) -> (Chart, Chart) {
+    // TODO: deal with odd widths.
+    let split_point = chart.cols() / 2;
+
+    // TODO: deal with charts with variable number of columns per row.
+    //       perhaps pad the rows after reading in the file?
+    let mut left_chart = Chart::new(split_point, chart.rows());
+    let mut right_chart = Chart::new(chart.cols() - split_point, chart.rows());
+
+    for row in 0..chart.rows() {
+        for col in 0..split_point {
+            left_chart.set_stitch(row, col, chart.stitch(row, col)?)?;
         }
 
-        let mut left_name = filename.file_stem().unwrap().to_owned();
-        left_name.push("-left");
-        let mut left_path = PathBuf::from(left_name);
-        left_path.set_extension("knit");
-        let mut right_name = filename.file_stem().unwrap().to_owned();
-        right_name.push("-right");
-        let mut right_path = PathBuf::from(right_name);
-        right_path.set_extension("knit");
-
-        println!(
-            "Writing to \"{}\" and \"{}\".",
-            left_path.to_string_lossy(),
-            right_path.to_string_lossy()
-        );
-        left_chart.write_to_file(left_path)?;
-        right_chart.write_to_file(right_path)?;
+        for col in split_point..chart.cols() {
+            right_chart.set_stitch(row, col - split_point, chart.stitch(row, col)?)?;
+        }
     }
+
+    (left_chart, right_chart)
 }
