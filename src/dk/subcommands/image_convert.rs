@@ -6,7 +6,6 @@ use crate::dk::chart::Stitch;
 use crate::dk::subcommands::chart_out;
 use crate::dk::util::make_knit_pathbuf;
 use crate::dk::{args::ImageConvertArgs, chart::Chart};
-use std::path::PathBuf;
 
 // returns (width, height).
 fn image_size_preserving_ar(

@@ -38,6 +38,7 @@ pub enum Dk {
         #[structopt(flatten)]
         args: ReflectArgs,
     },
+    /// Zip two charts together side-by-side.
     Zip {
         #[structopt(flatten)]
         args: ZipArgs,
@@ -116,8 +117,8 @@ pub struct ReflectArgs {
 #[derive(Debug, StructOpt)]
 pub struct ZipArgs {
     #[structopt(short, long)]
-    pub output: Option<PathBuf>,
+    pub out_file_name: Option<PathBuf>,
 
-    pub left: PathBuf,
-    pub right: PathBuf,
+    pub left_file_name: PathBuf,
+    pub right_file_name: PathBuf,
 }

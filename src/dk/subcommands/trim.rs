@@ -3,8 +3,8 @@ use crate::dk::{
     args::TrimArgs,
     chart::{Chart, Stitch},
 };
-use anyhow::{anyhow, Error};
-use fehler::{throw, throws};
+use anyhow::{anyhow, Error, Result};
+use fehler::throws;
 
 #[throws]
 pub fn trim(args: TrimArgs) {
@@ -29,8 +29,7 @@ fn trim_chart(chart: &Chart) -> Chart {
     trimmed
 }
 
-#[throws]
-fn find_top(chart: &Chart) -> u16 {
+fn find_top(chart: &Chart) -> Result<u16> {
     for row in 0..chart.rows() {
         for col in 0..chart.cols() {
             match chart.stitch(row, col)? {
@@ -40,17 +39,16 @@ fn find_top(chart: &Chart) -> u16 {
                 }
                 _ => {
                     // We found a real character, so this is the top row.
-                    return row;
+                    return Ok(row);
                 }
             }
         }
     }
 
-    throw!(anyhow!("Cannot trim an empty chart!"))
+    Err(anyhow!("Cannot trim an empty chart!"))
 }
 
-#[throws]
-fn find_bottom(chart: &Chart) -> u16 {
+fn find_bottom(chart: &Chart) -> Result<u16> {
     for row in (0..chart.rows()).rev() {
         for col in 0..chart.cols() {
             match chart.stitch(row, col)? {
@@ -60,17 +58,16 @@ fn find_bottom(chart: &Chart) -> u16 {
                 }
                 _ => {
                     // We found a real character, so this is the bottom row.
-                    return row;
+                    return Ok(row);
                 }
             }
         }
     }
 
-    throw!(anyhow!("Cannot trim an empty chart."))
+    Err(anyhow!("Cannot trim an empty chart."))
 }
 
-#[throws]
-fn find_left(chart: &Chart) -> u16 {
+fn find_left(chart: &Chart) -> Result<u16> {
     for col in 0..chart.cols() {
         for row in 0..chart.rows() {
             match chart.stitch(row, col)? {
@@ -80,17 +77,16 @@ fn find_left(chart: &Chart) -> u16 {
                 }
                 _ => {
                     // We found a real character, so this is the bottom row.
-                    return col;
+                    return Ok(col);
                 }
             }
         }
     }
 
-    throw!(anyhow!("Cannot trim an empty chart"))
+    Err(anyhow!("Cannot trim an empty chart"))
 }
 
-#[throws]
-fn find_right(chart: &Chart) -> u16 {
+fn find_right(chart: &Chart) -> Result<u16> {
     for col in (0..chart.cols()).rev() {
         for row in 0..chart.rows() {
             match chart.stitch(row, col)? {
@@ -100,11 +96,11 @@ fn find_right(chart: &Chart) -> u16 {
                 }
                 _ => {
                     // We found a real character, so this is the bottom row.
-                    return col;
+                    return Ok(col);
                 }
             }
         }
     }
 
-    throw!(anyhow!("Cannot trim an empty chart"))
+    Err(anyhow!("Cannot trim an empty chart"))
 }

@@ -1,3 +1,5 @@
+use crate::dk::subcommands::chart_out;
+use crate::dk::util::make_knit_pathbuf;
 use crate::dk::{
     args::ZipArgs,
     chart::{Chart, Stitch},
@@ -5,12 +7,11 @@ use crate::dk::{
 use anyhow::Error;
 use fehler::throws;
 use std::cmp::max;
-use std::path::PathBuf;
 
 #[throws]
 pub fn zip(args: ZipArgs) {
-    let left_chart = Chart::read_from_file(args.left)?;
-    let right_chart = Chart::read_from_file(args.right)?;
+    let left_chart = Chart::read_from_file(args.left_file_name)?;
+    let right_chart = Chart::read_from_file(args.right_file_name)?;
 
     let mut zipped = Chart::new(
         left_chart.cols() + right_chart.cols(),
@@ -36,13 +37,9 @@ pub fn zip(args: ZipArgs) {
         }
     }
 
-    let path = args
-        .output
-        .map(|p| {
-            let mut pb = p;
-            pb.set_extension("knit");
-            pb
-        })
-        .unwrap_or_else(|| PathBuf::from("zipped.knit"));
-    zipped.write_to_file(path)?;
+    let out_file_name = args
+        .out_file_name
+        .map(|pb| make_knit_pathbuf(pb, None))
+        .transpose()?;
+    chart_out(&out_file_name, &zipped)?;
 }

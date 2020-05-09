@@ -2,9 +2,9 @@ use crate::dk::args::{LeftArgs, RightArgs, SplitArgs};
 use crate::dk::chart::Chart;
 use crate::dk::subcommands::{chart_in, pipe_chart};
 use crate::dk::util::make_knit_pathbuf;
-use anyhow::{anyhow, Error};
+use anyhow::Error;
 use fehler::throws;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 #[throws]
 pub fn left(args: LeftArgs) {
