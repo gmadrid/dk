@@ -13,8 +13,8 @@ pub fn reflect(args: ReflectArgs) {
 pub fn reflect_chart(chart: &Chart) -> Chart {
     let mut reflected = Chart::new(chart.cols(), chart.rows());
 
-    for row in 0..chart.rows() {
-        for col in 0..chart.cols() {
+    for row in chart.rows() {
+        for col in chart.cols() {
             let stitch = chart.stitch(row, col)?;
 
             reflected.set_stitch(row, reflected.cols() - col - 1, stitch)?;

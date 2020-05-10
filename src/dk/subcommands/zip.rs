@@ -18,8 +18,8 @@ pub fn zip(args: ZipArgs) {
         max(left_chart.rows(), right_chart.rows()),
     );
 
-    for row in 0..zipped.rows() {
-        for col in 0..zipped.cols() {
+    for row in zipped.rows() {
+        for col in zipped.cols() {
             let stitch = if col < left_chart.cols() {
                 // We're in the left chart.
                 if row >= left_chart.rows() {

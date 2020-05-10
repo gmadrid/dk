@@ -5,6 +5,8 @@ use crate::dk::{
 };
 use anyhow::{anyhow, Error, Result};
 use fehler::throws;
+use crate::dk::units::{Rows, Cols};
+use std::iter::Iterator;
 
 #[throws]
 pub fn trim(args: TrimArgs) {
@@ -19,19 +21,27 @@ fn trim_chart(chart: &Chart) -> Chart {
     let right = find_right(&chart)?;
 
     let mut trimmed = Chart::new(right - left + 1, bottom - top + 1);
-    for (trimmed_row, row) in (top..=bottom).enumerate() {
-        for (trimmed_col, col) in (left..=right).enumerate() {
-            let stitch = chart.stitch(row, col)?;
-            trimmed.set_stitch(trimmed_row as u16, trimmed_col as u16, stitch)?;
+    for row in bottom - top + 1 {
+        for col in right - left + 1 {
+            let stitch = chart.stitch(row + top, col + left)?;
+            trimmed.set_stitch(row, col, stitch)?;
         }
+
     }
+
+    // for row in top..(bottom + 1) {
+    //     for (trimmed_col, col) in (left..=right).enumerate() {
+    //         let stitch = chart.stitch(row, col)?;
+    //         trimmed.set_stitch(Rows::from(trimmed_row), Cols::from(trimmed_col), stitch)?;
+    //     }
+    // }
 
     trimmed
 }
 
-fn find_top(chart: &Chart) -> Result<u16> {
-    for row in 0..chart.rows() {
-        for col in 0..chart.cols() {
+fn find_top(chart: &Chart) -> Result<Rows> {
+    for row in chart.rows() {
+        for col in chart.cols() {
             match chart.stitch(row, col)? {
                 // Knit and Empty get trimmed
                 Stitch::Knit | Stitch::Empty => {
@@ -48,9 +58,9 @@ fn find_top(chart: &Chart) -> Result<u16> {
     Err(anyhow!("Cannot trim an empty chart!"))
 }
 
-fn find_bottom(chart: &Chart) -> Result<u16> {
-    for row in (0..chart.rows()).rev() {
-        for col in 0..chart.cols() {
+fn find_bottom(chart: &Chart) -> Result<Rows> {
+    for row in chart.rows().into_iter().rev() {
+        for col in chart.cols() {
             match chart.stitch(row, col)? {
                 // Knit and Empty get trimmed
                 Stitch::Knit | Stitch::Empty => {
@@ -67,9 +77,9 @@ fn find_bottom(chart: &Chart) -> Result<u16> {
     Err(anyhow!("Cannot trim an empty chart."))
 }
 
-fn find_left(chart: &Chart) -> Result<u16> {
-    for col in 0..chart.cols() {
-        for row in 0..chart.rows() {
+fn find_left(chart: &Chart) -> Result<Cols> {
+    for col in chart.cols() {
+        for row in chart.rows() {
             match chart.stitch(row, col)? {
                 // Knit and Empty get trimmed
                 Stitch::Knit | Stitch::Empty => {
@@ -86,9 +96,9 @@ fn find_left(chart: &Chart) -> Result<u16> {
     Err(anyhow!("Cannot trim an empty chart"))
 }
 
-fn find_right(chart: &Chart) -> Result<u16> {
-    for col in (0..chart.cols()).rev() {
-        for row in 0..chart.rows() {
+fn find_right(chart: &Chart) -> Result<Cols> {
+    for col in chart.cols().into_iter().rev() {
+        for row in chart.rows() {
             match chart.stitch(row, col)? {
                 // Knit and Empty get trimmed
                 Stitch::Knit | Stitch::Empty => {

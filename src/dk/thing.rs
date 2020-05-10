@@ -5,6 +5,7 @@ use image::{Rgb, RgbImage};
 use imageproc::drawing::{draw_filled_circle_mut, draw_filled_rect_mut, draw_line_segment_mut};
 use imageproc::rect::Rect;
 use std::path::Path;
+use crate::dk::units::{Height, Width};
 
 #[throws]
 pub fn the_thing(filename: impl AsRef<Path>, chart: &Chart) {
@@ -13,17 +14,17 @@ pub fn the_thing(filename: impl AsRef<Path>, chart: &Chart) {
     let background_color = Rgb([255, 255, 255]);
     let grid_color = Rgb([0, 0, 0]);
 
-    let rows = u32::from(chart.rows());
-    let cols = u32::from(chart.cols());
-    let mut img = RgbImage::new(cols * cell_size, rows * cell_size);
+    let rows = chart.rows();
+    let cols = chart.cols();
+    let mut img = RgbImage::new(Width::from(cols).into(), Height::from(rows).into());
 
     draw_filled_rect_mut(
         &mut img,
-        Rect::at(0, 0).of_size(cols * cell_size, rows * cell_size),
+        Rect::at(0, 0).of_size(u32::from(cols) * cell_size, u32::from(rows) * cell_size),
         background_color,
     );
 
-    for row in 0..=rows {
+    for row in rows + 1 {
         let row_offset = (row * cell_size) as f32;
         draw_line_segment_mut(
             &mut img,
@@ -33,7 +34,7 @@ pub fn the_thing(filename: impl AsRef<Path>, chart: &Chart) {
         );
     }
 
-    for col in 0..=cols {
+    for col in cols + 1 {
         let col_offset = (col * cell_size) as f32;
         draw_line_segment_mut(
             &mut img,
@@ -43,9 +44,9 @@ pub fn the_thing(filename: impl AsRef<Path>, chart: &Chart) {
         );
     }
 
-    for row in 0..rows {
-        for col in 0..cols {
-            if let Stitch::Purl = chart.stitch(row as u16, col as u16)? {
+    for row in rows {
+        for col in cols {
+            if let Stitch::Purl = chart.stitch(row, col)? {
                 let cell_x = col * cell_size;
                 let cell_y = row * cell_size;
 

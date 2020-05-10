@@ -4,8 +4,10 @@ use image::{DynamicImage, GenericImageView, GrayImage, ImageBuffer, Luma};
 
 use crate::dk::chart::Stitch;
 use crate::dk::subcommands::chart_out;
+use crate::dk::units::{Cols, Height, Rows, Width};
 use crate::dk::util::make_knit_pathbuf;
 use crate::dk::{args::ImageConvertArgs, chart::Chart};
+use std::convert::TryFrom;
 
 // returns (width, height).
 fn image_size_preserving_ar(
@@ -75,15 +77,18 @@ fn convert_to_bw_image(image: &GrayImage, threshold: u8) -> ImageBuffer<Luma<u8>
 
 #[throws]
 pub fn convert_bw_image_to_chart(image: &ImageBuffer<Luma<u8>, Vec<u8>>) -> Chart {
-    let mut chart = Chart::new(image.width() as u16, image.height() as u16);
-    for (col, row, pixel) in image.enumerate_pixels() {
+    let mut chart = Chart::new(
+        Width::try_from(image.width())?,
+        Height::try_from(image.height())?,
+    );
+    for (x, y, pixel) in image.enumerate_pixels() {
         // Pixel value will always be 0 or 255 at this point because we converted to bw image.
         let stitch = if pixel.0[0] == 0 {
             Stitch::Purl
         } else {
             Stitch::Knit
         };
-        chart.set_stitch(row as u16, col as u16, stitch)?;
+        chart.set_stitch(Rows::try_from(y)?, Cols::try_from(x)?, stitch)?;
     }
     chart
 }

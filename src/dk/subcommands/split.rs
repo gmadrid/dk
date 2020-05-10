@@ -52,13 +52,13 @@ pub fn split_chart(chart: &Chart) -> (Chart, Chart) {
     let mut left_chart = Chart::new(split_point, chart.rows());
     let mut right_chart = Chart::new(chart.cols() - split_point, chart.rows());
 
-    for row in 0..chart.rows() {
-        for col in 0..split_point {
+    for row in chart.rows() {
+        for col in split_point {
             left_chart.set_stitch(row, col, chart.stitch(row, col)?)?;
         }
 
-        for col in split_point..chart.cols() {
-            right_chart.set_stitch(row, col - split_point, chart.stitch(row, col)?)?;
+        for col in chart.cols() - split_point {
+            right_chart.set_stitch(row, col, chart.stitch(row, col+ split_point)?)?;
         }
     }
 

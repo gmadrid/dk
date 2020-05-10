@@ -1,6 +1,8 @@
+use crate::dk::units::{Cols, Height, Rows, Width};
 use anyhow::{anyhow, Error};
 use fehler::{throw, throws};
 use std::cmp::max;
+use std::convert::{TryFrom, TryInto};
 use std::fmt::{self, Debug, Display, Formatter};
 use std::io::{BufRead, BufReader, Write};
 use std::path::Path;
@@ -40,32 +42,34 @@ impl Display for Stitch {
 pub struct Chart {
     stitches: Vec<Vec<Stitch>>,
 
-    rows: usize,
-    cols: usize,
+    rows: Rows,
+    cols: Cols,
 }
 
 impl Chart {
     // TODO: use the type system so you can't swap these.
-    pub fn new(width: u16, height: u16) -> Chart {
+    pub fn new<W, H>(w: W, h: H) -> Chart where W: Into<Width>, H: Into<Height> {
+        let width = w.into();
+        let height = h.into();
         let mut stitches: Vec<Vec<Stitch>> = Vec::default();
         stitches.resize_with(usize::from(height), Default::default);
-        for i in 0..height {
+        for i in height {
             stitches[usize::from(i)].resize_with(usize::from(width), Default::default);
         }
 
         Chart {
             stitches,
-            rows: usize::from(height),
-            cols: usize::from(width),
+            rows: height.into(),
+            cols: width.into(),
         }
     }
 
-    pub fn rows(&self) -> u16 {
-        self.rows as u16
+    pub fn rows(&self) -> Rows {
+        self.rows
     }
 
-    pub fn cols(&self) -> u16 {
-        self.cols as u16
+    pub fn cols(&self) -> Cols {
+        self.cols
     }
 
     #[throws]
@@ -169,11 +173,11 @@ impl Chart {
             stitches.push(current_row);
         }
 
-        let rows = stitches.len();
+        let rows = Rows::try_from(stitches.len())?;
         Chart {
             stitches,
             rows,
-            cols: max_cols,
+            cols: max_cols.try_into()?,
         }
     }
 
@@ -183,23 +187,23 @@ impl Chart {
     }
 
     #[throws]
-    fn range_check(&self, row: u16, col: u16) {
-        if usize::from(row) >= self.rows {
+    fn range_check(&self, row: Rows, col: Cols) {
+        if row >= self.rows {
             throw!(anyhow!("Row {} should be less than {}", row, self.rows))
         }
-        if usize::from(col) >= self.cols {
+        if col >= self.cols {
             throw!(anyhow!("Col {} should be less than {}", col, self.cols))
         }
     }
 
     #[throws]
-    pub fn stitch(&self, row: u16, col: u16) -> Stitch {
+    pub fn stitch(&self, row: Rows, col: Cols) -> Stitch {
         self.range_check(row, col)?;
         self.stitches[usize::from(row)][usize::from(col)]
     }
 
     #[throws]
-    pub fn set_stitch(&mut self, row: u16, col: u16, stitch: Stitch) {
+    pub fn set_stitch(&mut self, row: Rows, col: Cols, stitch: Stitch) {
         // ensure!
         self.range_check(row, col)?;
         self.stitches[usize::from(row)][usize::from(col)] = stitch;
