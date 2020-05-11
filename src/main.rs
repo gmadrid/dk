@@ -5,7 +5,7 @@ use structopt::StructOpt;
 mod dk;
 
 macro_rules! dispatch {
-    ($(($command:ident, $proc:ident)),*) => {
+    ($($command:ident --> $proc:ident),*) => {
         let subcommand = dk::Dk::from_args();
         match subcommand {
             $(
@@ -18,13 +18,13 @@ macro_rules! dispatch {
 #[throws]
 fn main() {
     dispatch!(
-        (ImageConvert, image_convert),
-        (Knitchart, knitchart),
-        (Left, left),
-        (Reflect, reflect),
-        (Right, right),
-        (Split, split),
-        (Trim, trim),
-        (Zip, zip)
+        ImageConvert --> image_convert,
+        Knitchart    --> knitchart,
+        Left         --> left,
+        Reflect      --> reflect,
+        Right        --> right,
+        Split        --> split,
+        Trim         --> trim,
+        Zip          --> zip
     );
 }
