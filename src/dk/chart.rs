@@ -6,38 +6,73 @@ use std::convert::{TryFrom, TryInto};
 use std::fmt::{self, Debug, Display, Formatter};
 use std::io::{BufRead, BufReader, Write};
 use std::path::Path;
+use css_color_parser::{Color, NAMED_COLORS};
 
-#[derive(Copy, Clone)]
-pub enum Stitch {
-    Knit,
-    Purl,
-    Empty,
+#[derive(Clone, Debug)]
+pub struct Stitch {
+    symbol: char,
+    color: Option<Color>,
+}
+
+impl Stitch {
+    pub fn new(symbol: char, color: Option<Color>) -> Stitch {
+        Stitch { symbol, color }
+    }
+
+    pub fn symbol(&self) -> char {
+        self.symbol
+    }
+
+    pub fn color(&self) -> Option<Color> {
+        self.color
+    }
 }
 
 impl Default for Stitch {
     fn default() -> Self {
-        Stitch::Empty
-    }
-}
-
-impl Debug for Stitch {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let ch = match self {
-            Stitch::Knit => ".",
-            Stitch::Purl => "*",
-            Stitch::Empty => "#",
-        };
-
-        write!(f, "{}", ch)
+        Stitch { symbol: ' ', color: None }
     }
 }
 
 impl Display for Stitch {
-    fn fmt(&self, f: &mut Formatter) -> Result<(), std::fmt::Error> {
-        // Display and Debug are the same.
-        write!(f, "{:?}", self)
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.symbol)
     }
 }
+
+//
+//
+// #[derive(Copy, Clone)]
+// pub enum Stitch {
+//     Knit,
+//     Purl,
+//     Empty,
+// }
+//
+// impl Default for Stitch {
+//     fn default() -> Self {
+//         Stitch::Empty
+//     }
+// }
+//
+// impl Debug for Stitch {
+//     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+//         let ch = match self {
+//             Stitch::Knit => ".",
+//             Stitch::Purl => "*",
+//             Stitch::Empty => "#",
+//         };
+//
+//         write!(f, "{}", ch)
+//     }
+// }
+//
+// impl Display for Stitch {
+//     fn fmt(&self, f: &mut Formatter) -> Result<(), std::fmt::Error> {
+//         // Display and Debug are the same.
+//         write!(f, "{:?}", self)
+//     }
+// }
 
 pub struct Chart {
     stitches: Vec<Vec<Stitch>>,
@@ -161,18 +196,8 @@ impl Chart {
 
             let mut current_row = Vec::new();
             for ch in stitch_str.chars() {
-                match ch {
-                    ' ' => current_row.push(Stitch::Empty),
-                    '.' => current_row.push(Stitch::Knit),
-                    '*' => current_row.push(Stitch::Purl),
+                let stitch = Stitch::new(ch, None);
 
-                    // TODO: improve this with a line number.
-                    _ => throw!(anyhow!(
-                        "Unexpected stitch character, '{}', in line, \"{}\"",
-                        ch,
-                        line
-                    )),
-                }
             }
             stitches.push(current_row);
         }
@@ -211,5 +236,17 @@ impl Chart {
         // ensure!
         self.range_check(row, col)?;
         self.stitches[usize::from(row)][usize::from(col)] = stitch;
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_stitch() {
+        let def = Stitch::default();
+        assert_eq!(def.symbol(), ' ');
+        assert_eq!(def.color(), None);
     }
 }
