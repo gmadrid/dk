@@ -4,33 +4,27 @@ use structopt::StructOpt;
 
 mod dk;
 
+macro_rules! dispatch {
+    ($(($command:ident, $proc:ident)),*) => {
+        let subcommand = dk::Dk::from_args();
+        match subcommand {
+            $(
+            dk::Dk::$command { args } => { dk::$proc(args)?; }
+            )*
+        }
+    }
+}
+
 #[throws]
 fn main() {
-    let subcommand = dk::Dk::from_args();
-    match subcommand {
-        dk::Dk::ImageConvert { args } => {
-            dk::image_convert(args)?;
-        }
-        dk::Dk::Knitchart { args } => {
-            dk::knitchart(args)?;
-        }
-        dk::Dk::Left { args } => {
-            dk::left(args)?;
-        }
-        dk::Dk::Right { args } => {
-            dk::right(args)?;
-        }
-        dk::Dk::Split { args } => {
-            dk::split(args)?;
-        }
-        dk::Dk::Trim { args } => {
-            dk::trim(args)?;
-        }
-        dk::Dk::Reflect { args } => {
-            dk::reflect(args)?;
-        }
-        dk::Dk::Zip { args } => {
-            dk::zip(args)?;
-        }
-    };
+    dispatch!(
+        (ImageConvert, image_convert),
+        (Knitchart, knitchart),
+        (Left, left),
+        (Reflect, reflect),
+        (Right, right),
+        (Split, split),
+        (Trim, trim),
+        (Zip, zip)
+    );
 }
