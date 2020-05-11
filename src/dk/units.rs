@@ -139,7 +139,7 @@ where
 {
     type Item = T;
     fn next(&mut self) -> Option<Self::Item> {
-        self.0.next().map(|v| Self::Item::from(v))
+        self.0.next().map(Self::Item::from)
     }
 }
 
@@ -148,6 +148,6 @@ where
     T: From<u16>,
 {
     fn next_back(&mut self) -> Option<Self::Item> {
-        self.0.next_back().map(|v| Self::Item::from(v))
+        self.0.next_back().map(Self::Item::from)
     }
 }

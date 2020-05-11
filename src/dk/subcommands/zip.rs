@@ -23,17 +23,19 @@ pub fn zip(args: ZipArgs) {
             let stitch = if col < left_chart.cols() {
                 // We're in the left chart.
                 if row >= left_chart.rows() {
-                    Stitch::Knit
+                    // TODO: arbitrary stitches
+                    Stitch::new('.', None)
                 } else {
-                    left_chart.stitch(row, col)?
+                    left_chart.stitch(row, col)?.clone()
                 }
             } else if row >= right_chart.rows() {
-                Stitch::Knit
+                // TODO: arbitrary stitches
+                Stitch::new('.', None)
             } else {
-                right_chart.stitch(row, col - left_chart.cols())?
+                right_chart.stitch(row, col - left_chart.cols())?.clone()
             };
 
-            zipped.set_stitch(row, col, stitch)?;
+            zipped.set_stitch(row, col, stitch.clone())?;
         }
     }
 

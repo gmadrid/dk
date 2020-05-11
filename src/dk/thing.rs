@@ -1,4 +1,4 @@
-use crate::dk::chart::{Chart, Stitch};
+use crate::dk::chart::Chart;
 use crate::dk::units::{Height, Width};
 use anyhow::Error;
 use fehler::throws;
@@ -46,7 +46,7 @@ pub fn the_thing(filename: impl AsRef<Path>, chart: &Chart) {
 
     for row in rows {
         for col in cols {
-            if let Stitch::Purl = chart.stitch(row, col)? {
+            if chart.stitch(row, col)?.symbol() == '*' {
                 let cell_x = col * cell_size;
                 let cell_y = row * cell_size;
 
@@ -63,5 +63,5 @@ pub fn the_thing(filename: impl AsRef<Path>, chart: &Chart) {
         }
     }
 
-    dbg!(img.save(dbg!(filename.as_ref())))?;
+    img.save(filename.as_ref())?;
 }

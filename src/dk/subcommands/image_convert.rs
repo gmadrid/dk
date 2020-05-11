@@ -84,9 +84,9 @@ pub fn convert_bw_image_to_chart(image: &ImageBuffer<Luma<u8>, Vec<u8>>) -> Char
     for (x, y, pixel) in image.enumerate_pixels() {
         // Pixel value will always be 0 or 255 at this point because we converted to bw image.
         let stitch = if pixel.0[0] == 0 {
-            Stitch::Purl
+            Stitch::new('*', None)
         } else {
-            Stitch::Knit
+            Stitch::new('.', None)
         };
         chart.set_stitch(Rows::try_from(y)?, Cols::try_from(x)?, stitch)?;
     }

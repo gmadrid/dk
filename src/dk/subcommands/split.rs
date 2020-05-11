@@ -50,11 +50,11 @@ pub fn split_chart(chart: &Chart) -> (Chart, Chart) {
 
     for row in chart.rows() {
         for col in split_point {
-            left_chart.set_stitch(row, col, chart.stitch(row, col)?)?;
+            left_chart.set_stitch(row, col, chart.stitch(row, col)?.clone())?;
         }
 
         for col in chart.cols() - split_point {
-            right_chart.set_stitch(row, col, chart.stitch(row, col + split_point)?)?;
+            right_chart.set_stitch(row, col, chart.stitch(row, col + split_point)?.clone())?;
         }
     }
 

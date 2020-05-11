@@ -1,9 +1,6 @@
 use crate::dk::subcommands::pipe_chart;
 use crate::dk::units::{Cols, Rows};
-use crate::dk::{
-    args::TrimArgs,
-    chart::{Chart, Stitch},
-};
+use crate::dk::{args::TrimArgs, chart::Chart};
 use anyhow::{anyhow, Error, Result};
 use fehler::throws;
 use std::iter::Iterator;
@@ -23,17 +20,10 @@ fn trim_chart(chart: &Chart) -> Chart {
     let mut trimmed = Chart::new(right - left + 1, bottom - top + 1);
     for row in bottom - top + 1 {
         for col in right - left + 1 {
-            let stitch = chart.stitch(row + top, col + left)?;
+            let stitch = chart.stitch(row + top, col + left)?.clone();
             trimmed.set_stitch(row, col, stitch)?;
         }
     }
-
-    // for row in top..(bottom + 1) {
-    //     for (trimmed_col, col) in (left..=right).enumerate() {
-    //         let stitch = chart.stitch(row, col)?;
-    //         trimmed.set_stitch(Rows::from(trimmed_row), Cols::from(trimmed_col), stitch)?;
-    //     }
-    // }
 
     trimmed
 }
@@ -41,15 +31,8 @@ fn trim_chart(chart: &Chart) -> Chart {
 fn find_top(chart: &Chart) -> Result<Rows> {
     for row in chart.rows() {
         for col in chart.cols() {
-            match chart.stitch(row, col)? {
-                // Knit and Empty get trimmed
-                Stitch::Knit | Stitch::Empty => {
-                    // no-op
-                }
-                _ => {
-                    // We found a real character, so this is the top row.
-                    return Ok(row);
-                }
+            if !chart.stitch(row, col)?.is_empty() {
+                return Ok(row);
             }
         }
     }
@@ -60,15 +43,8 @@ fn find_top(chart: &Chart) -> Result<Rows> {
 fn find_bottom(chart: &Chart) -> Result<Rows> {
     for row in chart.rows().into_iter().rev() {
         for col in chart.cols() {
-            match chart.stitch(row, col)? {
-                // Knit and Empty get trimmed
-                Stitch::Knit | Stitch::Empty => {
-                    // no-op
-                }
-                _ => {
-                    // We found a real character, so this is the bottom row.
-                    return Ok(row);
-                }
+            if !chart.stitch(row, col)?.is_empty() {
+                return Ok(row);
             }
         }
     }
@@ -79,15 +55,8 @@ fn find_bottom(chart: &Chart) -> Result<Rows> {
 fn find_left(chart: &Chart) -> Result<Cols> {
     for col in chart.cols() {
         for row in chart.rows() {
-            match chart.stitch(row, col)? {
-                // Knit and Empty get trimmed
-                Stitch::Knit | Stitch::Empty => {
-                    // no-op
-                }
-                _ => {
-                    // We found a real character, so this is the bottom row.
-                    return Ok(col);
-                }
+            if !chart.stitch(row, col)?.is_empty() {
+                return Ok(col);
             }
         }
     }
@@ -98,15 +67,8 @@ fn find_left(chart: &Chart) -> Result<Cols> {
 fn find_right(chart: &Chart) -> Result<Cols> {
     for col in chart.cols().into_iter().rev() {
         for row in chart.rows() {
-            match chart.stitch(row, col)? {
-                // Knit and Empty get trimmed
-                Stitch::Knit | Stitch::Empty => {
-                    // no-op
-                }
-                _ => {
-                    // We found a real character, so this is the bottom row.
-                    return Ok(col);
-                }
+            if !chart.stitch(row, col)?.is_empty() {
+                return Ok(col);
             }
         }
     }

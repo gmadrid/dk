@@ -16,8 +16,7 @@ pub fn reflect_chart(chart: &Chart) -> Chart {
     for row in chart.rows() {
         for col in chart.cols() {
             let stitch = chart.stitch(row, col)?;
-
-            reflected.set_stitch(row, reflected.cols() - col - 1, stitch)?;
+            reflected.set_stitch(row, reflected.cols() - col - 1, stitch.clone())?;
         }
     }
 
