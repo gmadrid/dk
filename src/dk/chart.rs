@@ -48,7 +48,11 @@ pub struct Chart {
 
 impl Chart {
     // TODO: use the type system so you can't swap these.
-    pub fn new<W, H>(w: W, h: H) -> Chart where W: Into<Width>, H: Into<Height> {
+    pub fn new<W, H>(w: W, h: H) -> Chart
+    where
+        W: Into<Width>,
+        H: Into<Height>,
+    {
         let width = w.into();
         let height = h.into();
         let mut stitches: Vec<Vec<Stitch>> = Vec::default();

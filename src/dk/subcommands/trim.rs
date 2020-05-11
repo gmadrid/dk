@@ -1,11 +1,11 @@
 use crate::dk::subcommands::pipe_chart;
+use crate::dk::units::{Cols, Rows};
 use crate::dk::{
     args::TrimArgs,
     chart::{Chart, Stitch},
 };
 use anyhow::{anyhow, Error, Result};
 use fehler::throws;
-use crate::dk::units::{Rows, Cols};
 use std::iter::Iterator;
 
 #[throws]
@@ -26,7 +26,6 @@ fn trim_chart(chart: &Chart) -> Chart {
             let stitch = chart.stitch(row + top, col + left)?;
             trimmed.set_stitch(row, col, stitch)?;
         }
-
     }
 
     // for row in top..(bottom + 1) {

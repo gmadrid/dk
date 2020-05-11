@@ -1,11 +1,11 @@
 use crate::dk::chart::{Chart, Stitch};
+use crate::dk::units::{Height, Width};
 use anyhow::Error;
 use fehler::throws;
 use image::{Rgb, RgbImage};
 use imageproc::drawing::{draw_filled_circle_mut, draw_filled_rect_mut, draw_line_segment_mut};
 use imageproc::rect::Rect;
 use std::path::Path;
-use crate::dk::units::{Height, Width};
 
 #[throws]
 pub fn the_thing(filename: impl AsRef<Path>, chart: &Chart) {

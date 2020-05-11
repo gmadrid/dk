@@ -58,7 +58,7 @@ pub fn split_chart(chart: &Chart) -> (Chart, Chart) {
         }
 
         for col in chart.cols() - split_point {
-            right_chart.set_stitch(row, col, chart.stitch(row, col+ split_point)?)?;
+            right_chart.set_stitch(row, col, chart.stitch(row, col + split_point)?)?;
         }
     }
 
