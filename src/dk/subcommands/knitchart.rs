@@ -1,6 +1,8 @@
-use crate::dk::args::KnitchartArgs;
-use crate::dk::chart::Chart;
-use crate::dk::thing::the_thing;
+use crate::dk::{
+    args::KnitchartArgs,
+    chart::Chart,
+    thing::the_thing,
+};
 use anyhow::Error;
 use fehler::throws;
 

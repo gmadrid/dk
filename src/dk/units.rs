@@ -1,8 +1,10 @@
 use anyhow::Error;
-use std::convert::TryFrom;
-use std::fmt::{self, Display, Formatter};
-use std::marker::PhantomData;
-use std::ops::{Add, Div, Mul, Range, Sub};
+use std::{
+    convert::TryFrom,
+    fmt::{self, Display, Formatter},
+    marker::PhantomData,
+    ops::{Add, Div, Mul, Range, Sub},
+};
 
 macro_rules! unit_binop {
     ($name:ident, $class:ident, $binop: ident) => {

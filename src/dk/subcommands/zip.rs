@@ -1,8 +1,8 @@
-use crate::dk::subcommands::chart_out;
-use crate::dk::util::make_knit_pathbuf;
 use crate::dk::{
     args::ZipArgs,
     chart::{Chart, Stitch},
+    subcommands::chart_out,
+    util::make_knit_pathbuf,
 };
 use anyhow::Error;
 use fehler::throws;

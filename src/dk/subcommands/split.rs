@@ -1,7 +1,9 @@
-use crate::dk::args::{LeftArgs, RightArgs, SplitArgs};
-use crate::dk::chart::Chart;
-use crate::dk::subcommands::{chart_in, pipe_chart};
-use crate::dk::util::make_knit_pathbuf;
+use crate::dk::{
+    args::{LeftArgs, RightArgs, SplitArgs},
+    chart::Chart,
+    subcommands::{chart_in, chart_out, pipe_chart},
+    util::make_knit_pathbuf,
+};
 use anyhow::Error;
 use fehler::throws;
 use std::path::PathBuf;

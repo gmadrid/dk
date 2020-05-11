@@ -1,12 +1,13 @@
+use crate::dk::{
+    args::ImageConvertArgs,
+    chart::{Chart, Stitch},
+    subcommands::chart_out,
+    units::{Cols, Height, Rows, Width},
+    util::make_knit_pathbuf,
+};
 use anyhow::{anyhow, Error};
 use fehler::{throw, throws};
 use image::{DynamicImage, GenericImageView, GrayImage, ImageBuffer, Luma};
-
-use crate::dk::chart::Stitch;
-use crate::dk::subcommands::chart_out;
-use crate::dk::units::{Cols, Height, Rows, Width};
-use crate::dk::util::make_knit_pathbuf;
-use crate::dk::{args::ImageConvertArgs, chart::Chart};
 use std::convert::TryFrom;
 
 // returns (width, height).

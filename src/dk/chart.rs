@@ -2,11 +2,13 @@ use crate::dk::units::{Cols, Height, Rows, Width};
 use anyhow::{anyhow, Error};
 use css_color_parser::Color;
 use fehler::{throw, throws};
-use std::cmp::max;
-use std::convert::{TryFrom, TryInto};
-use std::fmt::{self, Debug, Display, Formatter};
-use std::io::{BufRead, BufReader, Write};
-use std::path::Path;
+use std::{
+    cmp::max,
+    convert::{TryFrom, TryInto},
+    fmt::{self, Debug, Display, Formatter},
+    io::{BufRead, BufReader, Write},
+    path::Path,
+};
 
 #[derive(Clone, Debug)]
 pub struct Stitch {

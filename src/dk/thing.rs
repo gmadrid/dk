@@ -1,5 +1,7 @@
-use crate::dk::chart::Chart;
-use crate::dk::units::{Height, Width};
+use crate::dk::{
+    chart::Chart,
+    units::{Height, Width},
+};
 use anyhow::Error;
 use fehler::throws;
 use image::{Rgb, RgbImage};

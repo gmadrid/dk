@@ -1,8 +1,9 @@
 use anyhow::{Error, Result};
 use fehler::throws;
-use std::io::Write;
-use std::io::{BufReader, Read};
-use std::path::PathBuf;
+use std::{
+    io::{BufReader, Read, Write},
+    path::PathBuf,
+};
 
 mod image_convert;
 mod knitchart;

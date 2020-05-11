@@ -1,6 +1,9 @@
-use crate::dk::subcommands::pipe_chart;
-use crate::dk::units::{Cols, Rows};
-use crate::dk::{args::TrimArgs, chart::Chart};
+use crate::dk::{
+    args::TrimArgs,
+    chart::Chart,
+    subcommands::pipe_chart,
+    units::{Cols, Rows},
+};
 use anyhow::{anyhow, Error, Result};
 use fehler::throws;
 use std::iter::Iterator;
