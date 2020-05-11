@@ -6,7 +6,7 @@ use fehler::throws;
 
 #[throws]
 pub fn reflect(args: ReflectArgs) {
-    pipe_chart(args.in_file_name, args.out_file_name, reflect_chart)?;
+    pipe_chart(args.pipe, reflect_chart)?;
 }
 
 #[throws]

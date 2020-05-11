@@ -63,5 +63,5 @@ pub fn the_thing(filename: impl AsRef<Path>, chart: &Chart) {
         }
     }
 
-    img.save(filename)?;
+    dbg!(img.save(dbg!(filename.as_ref())))?;
 }

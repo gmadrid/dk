@@ -46,6 +46,15 @@ pub enum Dk {
 }
 
 #[derive(Debug, StructOpt)]
+pub struct Pipeable {
+    #[structopt(long, short, parse(from_os_str))]
+    pub out_file_name: Option<PathBuf>,
+
+    #[structopt(parse(from_os_str))]
+    pub in_file_name: Option<PathBuf>,
+}
+
+#[derive(Debug, StructOpt)]
 pub struct ImageConvertArgs {
     #[structopt(long, short, help = "height in stitches of the final pattern")]
     pub height: Option<u16>,
@@ -61,27 +70,21 @@ pub struct ImageConvertArgs {
 }
 
 #[derive(Debug, StructOpt)]
-pub struct LeftArgs {
-    #[structopt(long, short, parse(from_os_str))]
-    pub out_file_name: Option<PathBuf>,
-
+pub struct KnitchartArgs {
     #[structopt(parse(from_os_str))]
-    pub in_file_name: Option<PathBuf>,
+    pub filenames: Vec<PathBuf>,
+}
+
+#[derive(Debug, StructOpt)]
+pub struct LeftArgs {
+    #[structopt(flatten)]
+    pub pipe: Pipeable,
 }
 
 #[derive(Debug, StructOpt)]
 pub struct RightArgs {
-    #[structopt(long, short, parse(from_os_str))]
-    pub out_file_name: Option<PathBuf>,
-
-    #[structopt(parse(from_os_str))]
-    pub in_file_name: Option<PathBuf>,
-}
-
-#[derive(Debug, StructOpt)]
-pub struct KnitchartArgs {
-    #[structopt(parse(from_os_str))]
-    pub filenames: Vec<PathBuf>,
+    #[structopt(flatten)]
+    pub pipe: Pipeable,
 }
 
 #[derive(Debug, StructOpt)]
@@ -95,11 +98,8 @@ pub struct SplitArgs {
 
 #[derive(Debug, StructOpt)]
 pub struct TrimArgs {
-    #[structopt(long, short, parse(from_os_str))]
-    pub out_file_name: Option<PathBuf>,
-
-    #[structopt(parse(from_os_str))]
-    pub in_file_name: Option<PathBuf>,
+    #[structopt(flatten)]
+    pub pipe: Pipeable,
 }
 
 #[derive(Debug, StructOpt)]
@@ -107,11 +107,8 @@ pub struct ReflectArgs {
     #[structopt(long)]
     pub right_to_left: bool,
 
-    #[structopt(long, short, parse(from_os_str))]
-    pub out_file_name: Option<PathBuf>,
-
-    #[structopt(parse(from_os_str))]
-    pub in_file_name: Option<PathBuf>,
+    #[structopt(flatten)]
+    pub pipe: Pipeable,
 }
 
 #[derive(Debug, StructOpt)]

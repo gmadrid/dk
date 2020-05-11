@@ -8,16 +8,12 @@ use std::path::PathBuf;
 
 #[throws]
 pub fn left(args: LeftArgs) {
-    pipe_chart(args.in_file_name, args.out_file_name, |chart| {
-        Ok(split_chart(chart)?.0)
-    })?;
+    pipe_chart(args.pipe, |chart| Ok(split_chart(chart)?.0))?;
 }
 
 #[throws]
 pub fn right(args: RightArgs) {
-    pipe_chart(args.in_file_name, args.out_file_name, |chart| {
-        Ok(split_chart(chart)?.1)
-    })?;
+    pipe_chart(args.pipe, |chart| Ok(split_chart(chart)?.1))?;
 }
 
 #[throws]

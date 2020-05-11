@@ -10,7 +10,7 @@ use std::iter::Iterator;
 
 #[throws]
 pub fn trim(args: TrimArgs) {
-    pipe_chart(args.in_file_name, args.out_file_name, trim_chart)?;
+    pipe_chart(args.pipe, trim_chart)?;
 }
 
 #[throws]

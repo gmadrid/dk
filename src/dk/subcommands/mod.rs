@@ -11,6 +11,7 @@ mod split;
 mod trim;
 mod zip;
 
+use crate::dk::args::Pipeable;
 use crate::dk::chart::Chart;
 pub use image_convert::image_convert; // image filename, outfile
 pub use knitchart::knitchart; // infile, image filename
@@ -50,12 +51,8 @@ fn pipe_command(
     cmd(rdr.as_mut(), wtr.as_mut())
 }
 
-fn pipe_chart(
-    in_path: Option<PathBuf>,
-    out_path: Option<PathBuf>,
-    cmd: impl FnOnce(&Chart) -> Result<Chart>,
-) -> Result<()> {
-    pipe_command(in_path, out_path, |rdr, wtr| {
+fn pipe_chart(pipe: Pipeable, cmd: impl FnOnce(&Chart) -> Result<Chart>) -> Result<()> {
+    pipe_command(pipe.in_file_name, pipe.out_file_name, |rdr, wtr| {
         let chart = Chart::read(&mut BufReader::new(rdr))?;
         let out_chart = cmd(&chart)?;
         out_chart.write(wtr)
