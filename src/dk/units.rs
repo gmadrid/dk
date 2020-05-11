@@ -26,7 +26,7 @@ macro_rules! unit_binop {
         impl $class<u32> for $name {
             type Output = u32;
             fn $binop(self, rhs: u32) -> Self::Output {
-                u32::from(self.0) + rhs
+                u32::$binop(u32::from(self.0), rhs)
             }
         }
     };
