@@ -97,7 +97,7 @@ impl Chart {
     #[throws]
     pub fn write_to_string(&self) -> String {
         let mut v = Vec::default();
-        self.write(&mut v);
+        self.write(&mut v)?;
         String::from_utf8(v)?
     }
 

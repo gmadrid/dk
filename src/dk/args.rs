@@ -71,8 +71,11 @@ pub struct ImageConvertArgs {
 
 #[derive(Debug, StructOpt)]
 pub struct KnitchartArgs {
+    #[structopt(long, short, parse(from_os_str))]
+    pub out_file_name: Option<PathBuf>,
+
     #[structopt(parse(from_os_str))]
-    pub filenames: Vec<PathBuf>,
+    pub in_file_name: Option<PathBuf>,
 }
 
 #[derive(Debug, StructOpt)]

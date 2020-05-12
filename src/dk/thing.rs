@@ -18,7 +18,8 @@ pub fn the_thing(filename: impl AsRef<Path>, chart: &Chart) {
 
     let rows = chart.rows();
     let cols = chart.cols();
-    let mut img = RgbImage::new(Width::from(cols).into(), Height::from(rows).into());
+    let mut img = RgbImage::new(u32::from(Width::from(cols)) * cell_size,
+                                u32::from(Height::from(rows)) * cell_size);
 
     draw_filled_rect_mut(
         &mut img,

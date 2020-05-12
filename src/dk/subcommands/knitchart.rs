@@ -1,14 +1,13 @@
-use crate::dk::{args::KnitchartArgs, chart::Chart, thing::the_thing};
+use crate::dk::{args::KnitchartArgs, chart::Chart, thing::the_thing, subcommands::chart_in};
 use anyhow::Error;
 use fehler::throws;
 
 #[throws]
 pub fn knitchart(args: KnitchartArgs) {
-    for filename in &args.filenames {
-        let chart = Chart::read_from_file(filename)?;
+    let chart = chart_in(&args.in_file_name)?;
 
-        let mut outfile = filename.clone();
-        outfile.set_extension("png");
-        the_thing(&outfile, &chart)?;
-    }
+    // TODO: use infilename if available and not provided.
+    let mut out_file = args.out_file_name.unwrap_or_else(|| "chart.png".into());
+    out_file.set_extension("png");
+    the_thing(&out_file, &chart)?;
 }
