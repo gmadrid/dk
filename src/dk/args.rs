@@ -18,6 +18,11 @@ pub enum Dk {
         #[structopt(flatten)]
         args: LeftArgs,
     },
+    /// Adds one knit around the entire chart.
+    Pad {
+        #[structopt(flatten)]
+        args: PadArgs,
+    },
     /// Cut a chart in half and output the right side.
     Right {
         #[structopt(flatten)]
@@ -80,6 +85,12 @@ pub struct KnitchartArgs {
 
 #[derive(Debug, StructOpt)]
 pub struct LeftArgs {
+    #[structopt(flatten)]
+    pub pipe: Pipeable,
+}
+
+#[derive(Debug, StructOpt)]
+pub struct PadArgs {
     #[structopt(flatten)]
     pub pipe: Pipeable,
 }

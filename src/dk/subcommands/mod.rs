@@ -7,6 +7,7 @@ use std::{
 
 mod image_convert;
 mod knitchart;
+mod pad;
 mod reflect;
 mod split;
 mod trim;
@@ -16,6 +17,7 @@ use crate::dk::args::Pipeable;
 use crate::dk::chart::Chart;
 pub use image_convert::image_convert; // image filename, outfile
 pub use knitchart::knitchart; // infile, image filename
+pub use pad::pad;
 pub use reflect::reflect;
 pub use split::{left, right, split};
 pub use trim::trim;
