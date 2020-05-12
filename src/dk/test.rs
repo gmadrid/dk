@@ -21,4 +21,3 @@ macro_rules! chart {
             Chart::read(&mut BufReader::new(s.as_bytes()))
         }}
     }
-

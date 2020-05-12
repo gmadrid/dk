@@ -10,6 +10,8 @@ use fehler::{throw, throws};
 use image::{DynamicImage, GenericImageView, GrayImage, ImageBuffer, Luma};
 use std::convert::TryFrom;
 
+#[rustfmt::skip::macros(chart, chart_str)]
+
 // returns (width, height).
 fn image_size_preserving_ar(
     argwidth: Option<u16>,
@@ -98,19 +100,7 @@ pub fn convert_bw_image_to_chart(image: &ImageBuffer<Luma<u8>, Vec<u8>>) -> Char
 pub fn image_convert(args: ImageConvertArgs) {
     let original_image = image::open(args.image_name)?;
 
-    let (img_width, img_height) = original_image.dimensions();
-    let (chart_width, chart_height) =
-        image_size_preserving_ar(args.width, args.height, img_width, img_height);
-
-    check_chart_size(chart_width, chart_height)?;
-
-    let grayscale = convert_to_scaled_grayscale_image(&original_image, chart_width, chart_height)?;
-
-    // TODO: allow specifying the desired grayscale threshold.
-    let threshold = 128_u8;
-    let bw = convert_to_bw_image(&grayscale, threshold)?;
-
-    let chart = convert_bw_image_to_chart(&bw)?;
+    let chart = image_convert_img(&original_image, args.height, args.width)?;
 
     let out_file_name = args
         .out_file_name
@@ -119,9 +109,56 @@ pub fn image_convert(args: ImageConvertArgs) {
     chart_out(&out_file_name, &chart)?;
 }
 
+#[throws]
+pub fn image_convert_img(image: &DynamicImage, height: Option<u16>, width: Option<u16>) -> Chart {
+    let (img_width, img_height) = image.dimensions();
+    let (chart_width, chart_height) =
+        image_size_preserving_ar(width, height, img_width, img_height);
+
+    check_chart_size(chart_width, chart_height)?;
+
+    let grayscale = convert_to_scaled_grayscale_image(&image, chart_width, chart_height)?;
+
+    // TODO: allow specifying the desired grayscale threshold.
+    let threshold = 128_u8;
+    let bw = convert_to_bw_image(&grayscale, threshold)?;
+
+    convert_bw_image_to_chart(&bw)?
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
+
+    #[throws]
+    #[test]
+    fn test_image_convert() {
+        let image_bytes = include_bytes!("../../../images/heart.png");
+        let image = image::load_from_memory(image_bytes)?;
+
+        let chart = image_convert_img(&image, Some(15), Some(16))?;
+        let chart_str = chart.write_to_string()?;
+
+        let expected_chart_str = chart_str!(
+            "..****....****..",
+            ".******..******.",
+            "****************",
+            "****************",
+            "****************",
+            "****************",
+            ".**************.",
+            ".**************.",
+            "..************..",
+            "...**********...",
+            "....********....",
+            ".....******.....",
+            "......****......",
+            ".......**.......",
+            "................"
+        );
+
+        assert_eq!(chart_str, expected_chart_str);
+    }
 
     #[test]
     fn test_sizes() {
