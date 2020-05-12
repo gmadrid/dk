@@ -18,6 +18,6 @@ macro_rules! chart {
                 s.push_str($line);
                 s.push_str("\n");
             )*
-            Chart::read(&mut BufReader::new(s.as_bytes()))
+            Chart::read(&mut std::io::BufReader::new(s.as_bytes()))
         }}
     }

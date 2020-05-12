@@ -26,7 +26,6 @@ pub fn reflect_chart(chart: &Chart) -> Chart {
 mod test {
     use super::*;
     use crate::dk::subcommands::reflect::reflect_chart;
-    use std::io::BufReader;
 
     #[throws]
     #[test]

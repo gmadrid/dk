@@ -62,3 +62,42 @@ pub fn split_chart(chart: &Chart) -> (Chart, Chart) {
 
     (left_chart, right_chart)
 }
+
+#[rustfmt::skip::macros(chart, chart_str)]
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[throws]
+    #[test]
+    fn test_split_even() {
+        let chart = chart!(
+            "..**..",
+            ".****.",
+            "******",
+            ".****.",
+            ".**..."
+        )?;
+
+        let (left, right) = split_chart(&chart)?;
+        let chart_left_str = chart_str!(
+            "..*",
+            ".**",
+            "***",
+            ".**",
+            ".**"
+        );
+        let chart_right_str = chart_str!(
+            "*..",
+            "**.",
+            "***",
+            "**.",
+            "..."
+        );
+
+        assert_eq!(left.write_to_string()?, chart_left_str);
+        assert_eq!(right.write_to_string()?, chart_right_str);
+    }
+
+    // TODO: test_split_odd (and left and right)
+}

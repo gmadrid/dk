@@ -78,3 +78,28 @@ fn find_right(chart: &Chart) -> Result<Cols> {
 
     Err(anyhow!("Cannot trim an empty chart"))
 }
+
+#[rustfmt::skip::macros(chart, chart_str)]
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[throws]
+    #[test]
+    fn test_trim() {
+        let chart = chart!(
+            ".........",
+            "...**....",
+            ".........",
+            "........."
+        )?;
+
+        let trimmed = trim_chart(&chart)?;
+
+        let trimmed_str = chart_str!(
+            "**"
+        );
+
+        assert_eq!(trimmed.write_to_string()?, trimmed_str);
+    }
+}
