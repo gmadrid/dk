@@ -20,3 +20,26 @@ pub fn reflect_chart(chart: &Chart) -> Chart {
 
     reflected
 }
+
+#[rustfmt::skip::macros(chart, chart_str)]
+#[cfg(test)]
+mod test {
+    use super::*;
+    use crate::dk::subcommands::reflect::reflect_chart;
+    use std::io::BufReader;
+
+    #[throws]
+    #[test]
+    fn test_reflect() {
+        let chart = chart!(
+            "*..",
+            "**.",
+            ".**")?;
+        let reflected = reflect_chart(&chart)?;
+        let reflected_str = chart_str!(
+            "..*",
+            ".**",
+            "**.");
+        assert_eq!(reflected.write_to_string()?, reflected_str);
+    }
+}
