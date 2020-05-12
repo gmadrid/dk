@@ -1,4 +1,4 @@
-use crate::dk::{args::KnitchartArgs, chart::Chart, thing::the_thing, subcommands::chart_in};
+use crate::dk::{args::KnitchartArgs, chart::Chart, subcommands::chart_in, thing::the_thing};
 use anyhow::Error;
 use fehler::throws;
 
