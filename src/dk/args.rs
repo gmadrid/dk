@@ -19,6 +19,11 @@ pub enum Dk {
         #[structopt(flatten)]
         args: LeftArgs,
     },
+    /// Merge two charts into a single double-knitting chart.
+    Merge {
+        #[structopt(flatten)]
+        args: MergeArgs,
+    },
     /// Adds one knit around the entire chart.
     Pad {
         #[structopt(flatten)]

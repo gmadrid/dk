@@ -1,8 +1,7 @@
 use crate::dk::{
     args::MergeArgs,
     chart::{Chart, Stitch},
-    chart_out,
-    subcommands::chart_in,
+    subcommands::{chart_in, chart_out},
 };
 use anyhow::Error;
 use fehler::throws;
@@ -13,7 +12,7 @@ pub fn merge(args: MergeArgs) {
     let right = chart_in(&Some(&args.right))?;
 
     let merged = merge_charts(&left, &right)?;
-    chart_out(&args.out_file_name, &chart);
+    chart_out(&args.out_file_name, &merged)?;
 }
 
 #[throws]

@@ -21,6 +21,7 @@ fn main() {
         ImageConvert --> image_convert,
         Knitchart    --> knitchart,
         Left         --> left,
+        Merge        --> merge,
         Pad          --> pad,
         Reflect      --> reflect,
         Right        --> right,
