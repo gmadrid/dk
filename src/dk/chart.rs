@@ -8,6 +8,7 @@ use std::{
     fmt::{self, Debug, Display, Formatter},
     io::{BufRead, BufReader, Write},
     path::Path,
+    str::FromStr,
 };
 
 #[derive(Clone, Debug)]
@@ -25,7 +26,6 @@ impl Stitch {
         self.symbol
     }
 
-    #[cfg(test)]
     pub fn color(&self) -> Option<Color> {
         self.color
     }

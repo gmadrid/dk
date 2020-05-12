@@ -12,7 +12,7 @@ use std::path::Path;
 #[throws]
 pub fn the_thing(filename: impl AsRef<Path>, chart: &Chart) {
     let cell_size = 15;
-    let dot_size = 10;
+    let dot_size = 8;
     let background_color = Rgb([255, 255, 255]);
     let grid_color = Rgb([0, 0, 0]);
 
@@ -51,10 +51,19 @@ pub fn the_thing(filename: impl AsRef<Path>, chart: &Chart) {
 
     for row in rows {
         for col in cols {
-            if chart.stitch(row, col)?.symbol() == '*' {
-                let cell_x = col * cell_size;
-                let cell_y = row * cell_size;
+            let cell_x = col * cell_size;
+            let cell_y = row * cell_size;
 
+            let stitch = chart.stitch(row, col)?;
+            if let Some(color) = stitch.color() {
+                draw_filled_rect_mut(
+                    &mut img,
+                    Rect::at(cell_x as i32, cell_y as i32).of_size(cell_size, cell_size),
+                    Rgb::from([color.r, color.g, color.b]),
+                )
+            }
+
+            if stitch.symbol() == '*' {
                 draw_filled_circle_mut(
                     &mut img,
                     (
