@@ -1,3 +1,7 @@
+#[cfg(test)]
+#[macro_use]
+mod test;
+
 mod args;
 mod chart;
 mod subcommands;

@@ -1,7 +1,7 @@
 use crate::dk::{
     args::{LeftArgs, RightArgs, SplitArgs},
     chart::Chart,
-    subcommands::{chart_in, chart_out, pipe_chart},
+    subcommands::{chart_in, pipe_chart},
     util::make_knit_pathbuf,
 };
 use anyhow::Error;
