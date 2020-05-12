@@ -8,7 +8,6 @@ use std::{
     fmt::{self, Debug, Display, Formatter},
     io::{BufRead, BufReader, Write},
     path::Path,
-    str::FromStr,
 };
 
 #[derive(Clone, Debug)]
@@ -95,6 +94,7 @@ impl Chart {
         self.write(&mut writer)?;
     }
 
+    #[cfg(test)]
     #[throws]
     pub fn write_to_string(&self) -> String {
         let mut v = Vec::default();

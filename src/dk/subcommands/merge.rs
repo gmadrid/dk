@@ -1,14 +1,13 @@
+use crate::dk::thing::the_thing;
 use crate::dk::{
     args::MergeArgs,
     chart::{Chart, Stitch},
     subcommands::{chart_in, chart_out},
 };
 use anyhow::{anyhow, Error};
-use fehler::{throw, throws};
-use image::Rgb;
 use css_color_parser::Color;
+use fehler::{throw, throws};
 use std::str::FromStr;
-use crate::dk::thing::the_thing;
 
 #[throws]
 pub fn merge(args: MergeArgs) {
@@ -18,7 +17,7 @@ pub fn merge(args: MergeArgs) {
     let merged = merge_charts(&left, &right)?;
     chart_out(&args.out_file_name, &merged)?;
 
-    the_thing("merged.png", &merged);
+    the_thing("merged.png", &merged)?;
 }
 
 // Merge two charts, `left` and `right`.
@@ -34,11 +33,19 @@ pub fn merge(args: MergeArgs) {
 fn merge_charts(left: &Chart, right: &Chart) -> Chart {
     //ensure!
     if left.rows() != right.rows() {
-        throw!(anyhow!("Charts must have the same number of rows. ({} != {})", left.rows(), right.rows()));
+        throw!(anyhow!(
+            "Charts must have the same number of rows. ({} != {})",
+            left.rows(),
+            right.rows()
+        ));
     }
     //ensure!
     if left.cols() != right.cols() {
-        throw!(anyhow!("Charts must have the same number of rows. ({} != {})", left.cols(), right.cols()));
+        throw!(anyhow!(
+            "Charts must have the same number of rows. ({} != {})",
+            left.cols(),
+            right.cols()
+        ));
     }
 
     let color_one = Color::from_str("lightblue")?;
@@ -56,7 +63,7 @@ fn merge_charts(left: &Chart, right: &Chart) -> Chart {
                 } else {
                     &color_one
                 };
-                let merged_stitch = Stitch::new(' ', Some(color.clone()));
+                let merged_stitch = Stitch::new('*', Some(color.clone()));
                 merged.set_stitch(row, col, merged_stitch)?;
             } else {
                 // From right chart.
@@ -67,7 +74,7 @@ fn merge_charts(left: &Chart, right: &Chart) -> Chart {
                 } else {
                     &color_two
                 };
-                let merged_stitch = Stitch::new('*', Some(color.clone()));
+                let merged_stitch = Stitch::new(' ', Some(color.clone()));
                 merged.set_stitch(row, col, merged_stitch)?;
             }
         }
