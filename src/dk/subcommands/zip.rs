@@ -1,4 +1,9 @@
-use crate::dk::{args::ZipArgs, chart::{Chart, Stitch}, subcommands::chart_out, util::make_knit_pathbuf};
+use crate::dk::{
+    args::ZipArgs,
+    chart::{Chart, Stitch},
+    subcommands::chart_out,
+    util::make_knit_pathbuf,
+};
 use anyhow::Error;
 use fehler::throws;
 use std::cmp::max;

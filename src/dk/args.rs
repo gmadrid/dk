@@ -9,6 +9,7 @@ pub enum Dk {
         #[structopt(flatten)]
         args: ImageConvertArgs,
     },
+    /// Outputs an chart image for a chart.
     Knitchart {
         #[structopt(flatten)]
         args: KnitchartArgs,
@@ -87,6 +88,18 @@ pub struct KnitchartArgs {
 pub struct LeftArgs {
     #[structopt(flatten)]
     pub pipe: Pipeable,
+}
+
+#[derive(Debug, StructOpt)]
+pub struct MergeArgs {
+    #[structopt(parse(from_os_str))]
+    pub left: PathBuf,
+
+    #[structopt(parse(from_os_str))]
+    pub right: PathBuf,
+
+    #[structopt(long, short, parse(from_os_str))]
+    pub out_file_name: Option<PathBuf>,
 }
 
 #[derive(Debug, StructOpt)]

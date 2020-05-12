@@ -1,12 +1,12 @@
-use crate::dk::chart::{Chart, Stitch};
 use crate::dk::args::PadArgs;
+use crate::dk::chart::{Chart, Stitch};
 use crate::dk::subcommands::pipe_chart;
 use anyhow::Error;
 use fehler::throws;
 
 #[throws]
 pub fn pad(args: PadArgs) {
-        pipe_chart(args.pipe, pad_chart)?;
+    pipe_chart(args.pipe, pad_chart)?;
 }
 
 #[throws]

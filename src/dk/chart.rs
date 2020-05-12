@@ -51,6 +51,7 @@ impl Display for Stitch {
     }
 }
 
+#[derive(Clone, Debug)]
 pub struct Chart {
     stitches: Vec<Vec<Stitch>>,
 
@@ -227,6 +228,12 @@ impl Chart {
         // ensure!
         self.range_check(row, col)?;
         self.stitches[usize::from(row)][usize::from(col)] = stitch;
+    }
+}
+
+impl AsRef<Chart> for Chart {
+    fn as_ref(&self) -> &Chart {
+        self
     }
 }
 

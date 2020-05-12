@@ -7,6 +7,7 @@ use std::{
 
 mod image_convert;
 mod knitchart;
+mod merge;
 mod pad;
 mod reflect;
 mod split;
@@ -15,17 +16,21 @@ mod zip;
 
 use crate::dk::args::Pipeable;
 use crate::dk::chart::Chart;
-pub use image_convert::image_convert; // image filename, outfile
-pub use knitchart::knitchart; // infile, image filename
+pub use image_convert::image_convert;
+pub use knitchart::knitchart;
+pub use merge::merge;
 pub use pad::pad;
 pub use reflect::reflect;
 pub use split::{left, right, split};
+use std::path::Path;
 pub use trim::trim;
-pub use zip::zip; // (infile, infile), outfile
-                  // pub use zip::mirror // infile, outfile [2 possibilities]
+pub use zip::zip;
 
 #[throws]
-fn pipe_in(path: &Option<PathBuf>) -> Box<dyn Read> {
+fn pipe_in<P>(path: &Option<P>) -> Box<dyn Read>
+where
+    P: AsRef<Path>,
+{
     let pipe: Box<dyn Read> = if let Some(p) = path {
         Box::new(std::fs::File::open(p)?)
     } else {
@@ -62,7 +67,10 @@ fn pipe_chart(pipe: Pipeable, cmd: impl FnOnce(&Chart) -> Result<Chart>) -> Resu
     })
 }
 
-fn chart_in(in_path: &Option<PathBuf>) -> Result<Chart> {
+fn chart_in<P>(in_path: &Option<P>) -> Result<Chart>
+where
+    P: AsRef<Path>,
+{
     let rdr = pipe_in(in_path)?;
     let chart = Chart::read(&mut BufReader::new(rdr))?;
     Ok(chart)
