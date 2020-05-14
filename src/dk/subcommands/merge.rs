@@ -63,7 +63,7 @@ fn merge_charts(left: &Chart, right: &Chart) -> Chart {
                 } else {
                     &color_one
                 };
-                let merged_stitch = Stitch::new('*', Some(color.clone()));
+                let merged_stitch = Stitch::new('*', Some(*color));
                 merged.set_stitch(row, col, merged_stitch)?;
             } else {
                 // From right chart.
@@ -74,7 +74,7 @@ fn merge_charts(left: &Chart, right: &Chart) -> Chart {
                 } else {
                     &color_two
                 };
-                let merged_stitch = Stitch::new(' ', Some(color.clone()));
+                let merged_stitch = Stitch::new(' ', Some(*color));
                 merged.set_stitch(row, col, merged_stitch)?;
             }
         }
