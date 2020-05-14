@@ -58,7 +58,7 @@ fn merge_charts(left: &Chart, right: &Chart) -> Chart {
                 // From left chart.
                 let left_col = col / 2u16;
                 let left_stitch = left.stitch(row, left_col)?;
-                let color = if left_stitch.symbol() == '.' {
+                let color = if left_stitch.symbol() == '*' {
                     &color_two
                 } else {
                     &color_one
