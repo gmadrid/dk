@@ -9,11 +9,9 @@ edition = "2018"
 name = "dklib"
 
 [dependencies]
-fehler = { path = "../../fehler" }
 anyhow = "1.0.28"
-structopt = "0.3.14"
+css-color-parser = "0.1.2"
+fehler = { git = "https://github.com/gmadrid/fehler.git", version = "1.0.0" }
 image = "0.23.4"
 imageproc = "0.20.0"
-css-color-parser = "0.1.2"
-#graphics_buffer = "0.7.3"
-#piston2d-graphics = "0.36.0"
+structopt = "0.3.14"

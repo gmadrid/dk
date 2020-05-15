@@ -1,10 +1,10 @@
 use crate::args::commandargs;
-use structopt::StructOpt;
+use anyhow::Error;
+use fehler::throws;
+use image;
 use std::path::PathBuf;
-
-mod image_convert;
-
-pub use image_convert::image_convert;
+use structopt::StructOpt;
+use dklib::operations::convert_image_to_chart;
 
 #[derive(Debug, StructOpt)]
 #[structopt(name = "dk", about = "A tool for making double-knitting patterns.")]
@@ -61,3 +61,25 @@ pub enum SubCommands {
     },
 }
 
+#[throws]
+pub fn image_convert(args: commandargs::ImageConvertArgs) {
+    let original_image = image::open(args.image_name)?;
+
+    let chart = convert_image_to_chart(&original_image, args.height, args.width)?;
+
+    let out_file_name = args
+        .out_file_name
+        .map(|pb| make_knit_pathbuf(pb, None))
+        .transpose()?;
+    chart_out(&out_file_name, &chart)?;
+}
+
+#[throws]
+pub fn knitchart(args: commandargs::KnitchartArgs) {
+    let chart = chart_in(&args.in_file_name)?;
+
+    // TODO: use infilename if available and not provided.
+    let mut out_file = args.out_file_name.unwrap_or_else(|| "chart.png".into());
+    out_file.set_extension("png");
+    the_thing(&out_file, &chart)?;
+}

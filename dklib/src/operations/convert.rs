@@ -1,20 +1,65 @@
 use crate::{
-    args::ImageConvertArgs,
     chart::{Chart, Stitch},
-    subcommands::chart_out,
     units::{Cols, Height, Rows, Width},
-    util::make_knit_pathbuf,
 };
 use anyhow::{anyhow, Error};
 use fehler::{throw, throws};
 use image::{DynamicImage, GenericImageView, GrayImage, ImageBuffer, Luma};
 use std::convert::TryFrom;
 
+// TODO: move these somewhere more global.
 #[rustfmt::skip::macros(chart, chart_str)]
 
+// TODO: add docs
+#[throws]
+pub fn convert_image_to_chart(
+    image: &DynamicImage,
+    height: Option<u16>,
+    width: Option<u16>,
+) -> Chart {
+    let (img_width, img_height) = image.dimensions();
+    let (chart_width, chart_height) =
+        image_size_preserving_ar(width, height, img_width, img_height);
+
+    check_chart_size(chart_width, chart_height)?;
+
+    let grayscale = convert_to_scaled_grayscale_image(&image, chart_width, chart_height)?;
+
+    // TODO: allow specifying the desired grayscale threshold.
+    let threshold = 128_u8;
+    let bw = convert_to_bw_image(&grayscale, threshold)?;
+
+    convert_bw_image_to_chart(&bw)?
+}
+
+// returns (width, height).
+fn image_size_preserving_ar(
+    argwidth: Option<u16>,
+    argheight: Option<u16>,
+    imagewidth: u32,
+    imageheight: u32,
+) -> (u32, u32) {
+    if let Some(argwidth) = argwidth {
+        if let Some(argheight) = argheight {
+            // Both args are provided, so just use the args.
+            (u32::from(argwidth), u32::from(argheight))
+        } else {
+            // Only got a width, so compute the height.
+            let ar = f64::from(imagewidth) / f64::from(imageheight);
+            (u32::from(argwidth), (f64::from(argwidth) / ar) as u32)
+        }
+    } else if let Some(argheight) = argheight {
+        // Only got a height, so compute the width.
+        let ar = f64::from(imagewidth) / f64::from(imageheight);
+        (((ar * f64::from(argheight)) as u32), u32::from(argheight))
+    } else {
+        // Didn't get either arg, so use values from the image.
+        (imagewidth, imageheight)
+    }
+}
 
 #[throws]
-pub fn check_chart_size(chart_width: u32, chart_height: u32) {
+fn check_chart_size(chart_width: u32, chart_height: u32) {
     // ensure!
     if chart_height > u32::from(u16::MAX) {
         throw!(anyhow!(
@@ -52,9 +97,8 @@ fn convert_to_bw_image(image: &GrayImage, threshold: u8) -> ImageBuffer<Luma<u8>
     }
     output
 }
-
 #[throws]
-pub fn convert_bw_image_to_chart(image: &ImageBuffer<Luma<u8>, Vec<u8>>) -> Chart {
+fn convert_bw_image_to_chart(image: &ImageBuffer<Luma<u8>, Vec<u8>>) -> Chart {
     let mut chart = Chart::new(
         Width::try_from(image.width())?,
         Height::try_from(image.height())?,
@@ -70,7 +114,6 @@ pub fn convert_bw_image_to_chart(image: &ImageBuffer<Luma<u8>, Vec<u8>>) -> Char
     }
     chart
 }
-
 
 #[cfg(test)]
 mod test {

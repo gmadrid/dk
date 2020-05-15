@@ -2,6 +2,7 @@
 //use fehler::throws;
 use structopt::StructOpt;
 //use dklib;
+use dklib::operations;
 
 mod args;
 mod subcommands;

@@ -3,6 +3,7 @@
 mod test;
 
 mod chart;
+mod operations;
 mod thing;
 mod units;
 mod util;
