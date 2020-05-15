@@ -122,10 +122,10 @@ mod test {
     #[throws]
     #[test]
     fn test_image_convert() {
-        let image_bytes = include_bytes!("../../../images/heart.png");
+        let image_bytes = include_bytes!("../../images/heart.png");
         let image = image::load_from_memory(image_bytes)?;
 
-        let chart = image_convert_img(&image, Some(15), Some(16))?;
+        let chart = convert_image_to_chart(&image, Some(15), Some(16))?;
         let chart_str = chart.write_to_string()?;
 
         let expected_chart_str = chart_str!(

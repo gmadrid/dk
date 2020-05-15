@@ -1,8 +1,6 @@
-//use anyhow::Error;
-//use fehler::throws;
+use anyhow::Error;
+use fehler::throws;
 use structopt::StructOpt;
-//use dklib;
-use dklib::operations;
 
 mod args;
 mod subcommands;
@@ -18,7 +16,8 @@ macro_rules! dispatch {
     }
 }
 
-fn main() -> Result<(), u8> {
+#[throws]
+fn main() {
     dispatch!(
         ImageConvert --> image_convert,
         Knitchart    --> knitchart,

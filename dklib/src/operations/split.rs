@@ -1,44 +1,6 @@
-use crate::{
-    args::{LeftArgs, RightArgs, SplitArgs},
-    chart::Chart,
-    subcommands::{chart_in, pipe_chart},
-    util::make_knit_pathbuf,
-};
+use crate::chart::Chart;
 use anyhow::Error;
 use fehler::throws;
-use std::path::PathBuf;
-
-#[throws]
-pub fn left(args: LeftArgs) {
-    pipe_chart(args.pipe, |chart| Ok(split_chart(chart)?.0))?;
-}
-
-#[throws]
-pub fn right(args: RightArgs) {
-    pipe_chart(args.pipe, |chart| Ok(split_chart(chart)?.1))?;
-}
-
-#[throws]
-pub fn split(args: SplitArgs) {
-    let chart = chart_in(&args.in_file_name)?;
-
-    // If the out stem is provided, use it. Fallback on the input file name.
-    // If that's not present (we read from stdin), then just pick "split".
-    let stem = args
-        .out_file_stem
-        .as_ref()
-        .or_else(|| args.in_file_name.as_ref())
-        .map_or_else(|| PathBuf::from("split"), |p| p.to_owned());
-
-    // TODO: check for existing filenames.
-
-    let left_file_name = make_knit_pathbuf(&stem, Some("-left"))?;
-    let right_file_name = make_knit_pathbuf(&stem, Some("-right"))?;
-
-    let (left_chart, right_chart) = split_chart(&chart)?;
-    left_chart.write_to_file(left_file_name)?;
-    right_chart.write_to_file(right_file_name)?;
-}
 
 #[throws]
 pub fn split_chart(chart: &Chart) -> (Chart, Chart) {

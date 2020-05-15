@@ -2,9 +2,9 @@
 #[macro_use]
 mod test;
 
-mod chart;
-mod operations;
+pub mod chart;
+pub mod operations;
 mod thing;
 mod units;
-mod util;
 
+pub use thing::the_thing;

@@ -1,24 +1,10 @@
-use crate::thing::the_thing;
 use crate::{
-    args::MergeArgs,
     chart::{Chart, Stitch},
-    subcommands::{chart_in, chart_out},
 };
 use anyhow::{anyhow, Error};
 use css_color_parser::Color;
 use fehler::{throw, throws};
 use std::str::FromStr;
-
-#[throws]
-pub fn merge(args: MergeArgs) {
-    let left = chart_in(&Some(&args.left))?;
-    let right = chart_in(&Some(&args.right))?;
-
-    let merged = merge_charts(&left, &right)?;
-    chart_out(&args.out_file_name, &merged)?;
-
-    the_thing("merged.png", &merged)?;
-}
 
 // Merge two charts, `left` and `right`.
 //
@@ -30,7 +16,7 @@ pub fn merge(args: MergeArgs) {
 //   * Right Purl -> Color 1
 
 #[throws]
-fn merge_charts(left: &Chart, right: &Chart) -> Chart {
+pub fn merge_charts(left: &Chart, right: &Chart) -> Chart {
     //ensure!
     if left.rows() != right.rows() {
         throw!(anyhow!(
