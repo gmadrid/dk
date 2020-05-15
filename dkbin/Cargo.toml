@@ -1,11 +1,11 @@
 [package]
-name = "dk-bin"
+name = "dkbin"
 version = "0.1.0"
 authors = ["George Madrid <gmadrid@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-anyhow = "1.0.30"
+anyhow = "1.0.31"
 dklib = { path = "../dklib" }
 fehler = { git = "https://github.com/gmadrid/fehler.git", version = "1.0.0" }
 structopt = "0.3.14"
