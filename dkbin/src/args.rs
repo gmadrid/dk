@@ -1,18 +1,18 @@
+mod common;
+
 use std::path::PathBuf;
 use structopt::StructOpt;
 
-#[derive(Debug, StructOpt)]
-pub struct Pipeable {
-    #[structopt(long, short, parse(from_os_str))]
-    pub out_file_name: Option<PathBuf>,
+pub use common::{
+    chart_in, chart_out, chart_path_in, chart_path_out, pipe_chart, ChartFileOut, Pipeable,
+};
 
-    #[structopt(parse(from_os_str))]
-    pub in_file_name: Option<PathBuf>,
-}
-
-////////
+/// The command line arguments for all of the subcommands.
+/// To ensure common argument names in the subcommands, use the above structs
+/// and "flatten" them.
 pub mod commandargs {
     use super::*;
+    use crate::args::common::ChartFileIn;
 
     #[derive(Debug, StructOpt)]
     pub struct ImageConvertArgs {
@@ -22,8 +22,8 @@ pub mod commandargs {
         #[structopt(long, short, help = "width in stitches of the final pattern")]
         pub width: Option<u16>,
 
-        #[structopt(long, short, parse(from_os_str))]
-        pub out_file_name: Option<PathBuf>,
+        #[structopt(flatten)]
+        pub outfile: ChartFileOut,
 
         #[structopt(parse(from_os_str))]
         pub image_name: PathBuf,
@@ -31,17 +31,17 @@ pub mod commandargs {
 
     #[derive(Debug, StructOpt)]
     pub struct KnitchartArgs {
-        #[structopt(long, short, parse(from_os_str))]
-        pub out_file_name: Option<PathBuf>,
+        #[structopt(flatten)]
+        pub infile: ChartFileIn,
 
         #[structopt(parse(from_os_str))]
-        pub in_file_name: Option<PathBuf>,
+        pub image_name: Option<PathBuf>,
     }
 
     #[derive(Debug, StructOpt)]
     pub struct LeftArgs {
         #[structopt(flatten)]
-        pub pipe: Pipeable,
+        pub pipe: common::Pipeable,
     }
 
     #[derive(Debug, StructOpt)]
@@ -59,7 +59,7 @@ pub mod commandargs {
     #[derive(Debug, StructOpt)]
     pub struct PadArgs {
         #[structopt(flatten)]
-        pub pipe: Pipeable,
+        pub pipe: common::Pipeable,
     }
 
     #[derive(Debug, StructOpt)]
@@ -68,13 +68,13 @@ pub mod commandargs {
         pub right_to_left: bool,
 
         #[structopt(flatten)]
-        pub pipe: Pipeable,
+        pub pipe: common::Pipeable,
     }
 
     #[derive(Debug, StructOpt)]
     pub struct RightArgs {
         #[structopt(flatten)]
-        pub pipe: Pipeable,
+        pub pipe: common::Pipeable,
     }
 
     #[derive(Debug, StructOpt)]
@@ -89,7 +89,7 @@ pub mod commandargs {
     #[derive(Debug, StructOpt)]
     pub struct TrimArgs {
         #[structopt(flatten)]
-        pub pipe: Pipeable,
+        pub pipe: common::Pipeable,
     }
 
     #[derive(Debug, StructOpt)]

@@ -9,7 +9,6 @@ use std::convert::TryFrom;
 
 // TODO: move these somewhere more global.
 #[rustfmt::skip::macros(chart, chart_str)]
-
 // TODO: add docs
 #[throws]
 pub fn convert_image_to_chart(

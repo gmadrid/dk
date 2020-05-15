@@ -1,6 +1,4 @@
-use crate::{
-    chart::{Chart, Stitch},
-};
+use crate::chart::{Chart, Stitch};
 use anyhow::Error;
 use fehler::throws;
 use std::cmp::max;
