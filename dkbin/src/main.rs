@@ -2,14 +2,15 @@ use anyhow::Error;
 use fehler::throws;
 use structopt::StructOpt;
 
-mod dk;
+mod args;
+mod subcommands;
 
 macro_rules! dispatch {
     ($($command:ident --> $proc:ident),*) => {
-        let subcommand = dk::Dk::from_args();
+        let subcommand = subcommands::SubCommands::from_args();
         match subcommand {
             $(
-            dk::Dk::$command { args } => { dk::$proc(args)?; }
+            subcommands::SubCommands::$command { args } => { subcommands::$proc(args)?; }
             )*
         }
     }

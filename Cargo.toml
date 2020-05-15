@@ -1,15 +1,6 @@
-[package]
-name = "dk"
-version = "0.1.0"
-authors = ["George Madrid <gmadrid@gmail.com>"]
-edition = "2018"
+[workspace]
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
-anyhow = "1.0.28"
-css-color-parser = "0.1.2"
-fehler = { git = "https://github.com/gmadrid/fehler.git", version = "1.0.0" }
-image = "0.23.4"
-imageproc = "0.20.0"
-structopt = "0.3.14"
+members = [
+    "dkbin",
+    "dklib",
+]

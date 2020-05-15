@@ -1,16 +1,9 @@
-use crate::dk::args::PadArgs;
-use crate::dk::chart::{Chart, Stitch};
-use crate::dk::subcommands::pipe_chart;
+use crate::chart::{Chart, Stitch};
 use anyhow::Error;
 use fehler::throws;
 
 #[throws]
-pub fn pad(args: PadArgs) {
-    pipe_chart(args.pipe, pad_chart)?;
-}
-
-#[throws]
-fn pad_chart(chart: &Chart) -> Chart {
+pub fn pad_chart(chart: &Chart) -> Chart {
     let mut padded = Chart::new(chart.cols() + 2, chart.rows() + 2);
 
     // Inefficient, but easy.

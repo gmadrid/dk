@@ -1,16 +1,36 @@
-use crate::dk::{
-    args::ImageConvertArgs,
+use crate::{
     chart::{Chart, Stitch},
-    subcommands::chart_out,
     units::{Cols, Height, Rows, Width},
-    util::make_knit_pathbuf,
 };
 use anyhow::{anyhow, Error};
 use fehler::{throw, throws};
 use image::{DynamicImage, GenericImageView, GrayImage, ImageBuffer, Luma};
 use std::convert::TryFrom;
 
+// TODO: move these somewhere more global.
 #[rustfmt::skip::macros(chart, chart_str)]
+
+// TODO: add docs
+#[throws]
+pub fn convert_image_to_chart(
+    image: &DynamicImage,
+    height: Option<u16>,
+    width: Option<u16>,
+) -> Chart {
+    let (img_width, img_height) = image.dimensions();
+    let (chart_width, chart_height) =
+        image_size_preserving_ar(width, height, img_width, img_height);
+
+    check_chart_size(chart_width, chart_height)?;
+
+    let grayscale = convert_to_scaled_grayscale_image(&image, chart_width, chart_height)?;
+
+    // TODO: allow specifying the desired grayscale threshold.
+    let threshold = 128_u8;
+    let bw = convert_to_bw_image(&grayscale, threshold)?;
+
+    convert_bw_image_to_chart(&bw)?
+}
 
 // returns (width, height).
 fn image_size_preserving_ar(
@@ -39,7 +59,7 @@ fn image_size_preserving_ar(
 }
 
 #[throws]
-pub fn check_chart_size(chart_width: u32, chart_height: u32) {
+fn check_chart_size(chart_width: u32, chart_height: u32) {
     // ensure!
     if chart_height > u32::from(u16::MAX) {
         throw!(anyhow!(
@@ -77,9 +97,8 @@ fn convert_to_bw_image(image: &GrayImage, threshold: u8) -> ImageBuffer<Luma<u8>
     }
     output
 }
-
 #[throws]
-pub fn convert_bw_image_to_chart(image: &ImageBuffer<Luma<u8>, Vec<u8>>) -> Chart {
+fn convert_bw_image_to_chart(image: &ImageBuffer<Luma<u8>, Vec<u8>>) -> Chart {
     let mut chart = Chart::new(
         Width::try_from(image.width())?,
         Height::try_from(image.height())?,
@@ -96,36 +115,6 @@ pub fn convert_bw_image_to_chart(image: &ImageBuffer<Luma<u8>, Vec<u8>>) -> Char
     chart
 }
 
-#[throws]
-pub fn image_convert(args: ImageConvertArgs) {
-    let original_image = image::open(args.image_name)?;
-
-    let chart = image_convert_img(&original_image, args.height, args.width)?;
-
-    let out_file_name = args
-        .out_file_name
-        .map(|pb| make_knit_pathbuf(pb, None))
-        .transpose()?;
-    chart_out(&out_file_name, &chart)?;
-}
-
-#[throws]
-pub fn image_convert_img(image: &DynamicImage, height: Option<u16>, width: Option<u16>) -> Chart {
-    let (img_width, img_height) = image.dimensions();
-    let (chart_width, chart_height) =
-        image_size_preserving_ar(width, height, img_width, img_height);
-
-    check_chart_size(chart_width, chart_height)?;
-
-    let grayscale = convert_to_scaled_grayscale_image(&image, chart_width, chart_height)?;
-
-    // TODO: allow specifying the desired grayscale threshold.
-    let threshold = 128_u8;
-    let bw = convert_to_bw_image(&grayscale, threshold)?;
-
-    convert_bw_image_to_chart(&bw)?
-}
-
 #[cfg(test)]
 mod test {
     use super::*;
@@ -133,10 +122,10 @@ mod test {
     #[throws]
     #[test]
     fn test_image_convert() {
-        let image_bytes = include_bytes!("../../../images/heart.png");
+        let image_bytes = include_bytes!("../../images/heart.png");
         let image = image::load_from_memory(image_bytes)?;
 
-        let chart = image_convert_img(&image, Some(15), Some(16))?;
+        let chart = convert_image_to_chart(&image, Some(15), Some(16))?;
         let chart_str = chart.write_to_string()?;
 
         let expected_chart_str = chart_str!(

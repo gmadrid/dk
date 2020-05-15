@@ -1,7 +1,5 @@
-use crate::dk::{
-    args::TrimArgs,
+use crate::{
     chart::Chart,
-    subcommands::pipe_chart,
     units::{Cols, Rows},
 };
 use anyhow::{anyhow, Error, Result};
@@ -9,12 +7,7 @@ use fehler::throws;
 use std::iter::Iterator;
 
 #[throws]
-pub fn trim(args: TrimArgs) {
-    pipe_chart(args.pipe, trim_chart)?;
-}
-
-#[throws]
-fn trim_chart(chart: &Chart) -> Chart {
+pub fn trim_chart(chart: &Chart) -> Chart {
     let top = find_top(&chart)?;
     let bottom = find_bottom(&chart)?;
     let left = find_left(&chart)?;
