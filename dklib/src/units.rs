@@ -1,4 +1,4 @@
-use anyhow::Error;
+use crate::Error;
 use std::{
     convert::TryFrom,
     fmt::{self, Display, Formatter},

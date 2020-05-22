@@ -1,5 +1,5 @@
+use crate::Error;
 use crate::chart::Chart;
-use anyhow::Error;
 use fehler::throws;
 
 #[throws]

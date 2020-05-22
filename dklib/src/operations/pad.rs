@@ -1,5 +1,5 @@
+use crate::Error;
 use crate::chart::{Chart, Stitch};
-use anyhow::Error;
 use fehler::throws;
 
 #[throws]

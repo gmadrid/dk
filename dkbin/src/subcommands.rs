@@ -1,5 +1,5 @@
 use crate::args::{commandargs, Pipeable};
-use anyhow::{anyhow, Error, Result};
+use anyhow::{anyhow, Error};
 use dklib::{
     chart::Chart,
     operations::{
@@ -58,7 +58,7 @@ fn pipe_out(path: &Option<PathBuf>) -> Box<dyn Write> {
 fn pipe_command(
     in_path: Option<PathBuf>,
     out_path: Option<PathBuf>,
-    cmd: impl FnOnce(&mut dyn Read, &mut dyn Write) -> Result<()>,
+    cmd: impl FnOnce(&mut dyn Read, &mut dyn Write) -> dklib::Result<()>,
 ) {
     let mut rdr = pipe_in(&in_path)?;
     let mut wtr = pipe_out(&out_path)?;
@@ -66,7 +66,7 @@ fn pipe_command(
 }
 
 #[throws]
-fn pipe_chart(pipe: Pipeable, cmd: impl FnOnce(&Chart) -> Result<Chart>) {
+fn pipe_chart(pipe: Pipeable, cmd: impl FnOnce(&Chart) -> dklib::Result<Chart>) {
     pipe_command(pipe.in_file_name, pipe.out_file_name, |rdr, wtr| {
         let chart = Chart::read(&mut BufReader::new(rdr))?;
         let out_chart = cmd(&chart)?;

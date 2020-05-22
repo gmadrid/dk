@@ -1,8 +1,8 @@
+use crate::Error;
 use crate::{
     chart::{Chart, Stitch},
     units::{Cols, Height, Rows, Width},
 };
-use anyhow::{anyhow, Error};
 use fehler::{throw, throws};
 use image::{DynamicImage, GenericImageView, GrayImage, ImageBuffer, Luma};
 use std::convert::TryFrom;
@@ -61,19 +61,11 @@ fn image_size_preserving_ar(
 fn check_chart_size(chart_width: u32, chart_height: u32) {
     // ensure!
     if chart_height > u32::from(u16::MAX) {
-        throw!(anyhow!(
-            "Computed height, {}, exceeds max height of {}",
-            chart_height,
-            u16::MAX
-        ));
+	throw!(Error::ChartTooBig{dimen: "height", value: chart_height, max: u16::MAX.into()});
     }
     // ensure!
     if chart_width > u32::from(u16::MAX) {
-        throw!(anyhow!(
-            "Computed width, {}, exceeds max width of {}",
-            chart_width,
-            u16::MAX
-        ));
+	throw!(Error::ChartTooBig{dimen: "width", value: chart_width, max: u16::MAX.into()});
     }
 }
 
