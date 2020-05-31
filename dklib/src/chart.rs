@@ -1,5 +1,5 @@
-use crate::Error;
 use crate::units::{Cols, Height, Rows, Width};
+use crate::Error;
 use css_color_parser::Color;
 use fehler::{throw, throws};
 use std::{
@@ -210,10 +210,18 @@ impl Chart {
     #[throws]
     fn range_check(&self, row: Rows, col: Cols) {
         if row >= self.rows {
-	    throw!(Error::RangeCheck{name: "Row", value: row.into(), max: self.rows.into()});
+            throw!(Error::RangeCheck {
+                name: "Row",
+                value: row.into(),
+                max: self.rows.into()
+            });
         }
         if col >= self.cols {
-	    throw!(Error::RangeCheck{name: "Col", value: col.into(), max: self.cols.into()});
+            throw!(Error::RangeCheck {
+                name: "Col",
+                value: col.into(),
+                max: self.cols.into()
+            });
         }
     }
 

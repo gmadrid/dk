@@ -3,8 +3,8 @@ use anyhow::{anyhow, Error};
 use dklib::{
     chart::Chart,
     operations::{
-        convert_image_to_chart, merge_charts, pad_chart, reflect_chart, split_chart, trim_chart,
-        zip_charts,
+        convert_image_to_chart, merge_charts, pad_chart, reflect_chart, repeat_chart, split_chart,
+        trim_chart, zip_charts,
     },
     the_thing,
 };
@@ -122,6 +122,11 @@ pub enum SubCommands {
         #[structopt(flatten)]
         args: commandargs::ReflectArgs,
     },
+    /// TODO: docs
+    Repeat {
+        #[structopt(flatten)]
+        args: commandargs::RepeatArgs,
+    },
     /// Cut a chart in half and output the right side.
     Right {
         #[structopt(flatten)]
@@ -193,6 +198,13 @@ pub fn pad(args: commandargs::PadArgs) {
 #[throws]
 pub fn reflect(args: commandargs::ReflectArgs) {
     pipe_chart(args.pipe, reflect_chart)?;
+}
+
+#[throws]
+pub fn repeat(args: commandargs::RepeatArgs) {
+    let chart = chart_in(&args.in_file_name)?;
+    let repeated = repeat_chart(&chart, args.horiz, args.vert)?;
+    chart_out(&args.out_file_name, &repeated)?;
 }
 
 #[throws]

@@ -72,6 +72,21 @@ pub mod commandargs {
     }
 
     #[derive(Debug, StructOpt)]
+    pub struct RepeatArgs {
+        #[structopt(long, short, parse(from_os_str))]
+        pub in_file_name: Option<PathBuf>,
+
+        #[structopt(long, short, parse(from_os_str))]
+        pub out_file_name: Option<PathBuf>,
+
+        #[structopt(long, short, default_value = "1")]
+        pub horiz: u8,
+
+        #[structopt(long, short, default_value("1"))]
+        pub vert: u8,
+    }
+
+    #[derive(Debug, StructOpt)]
     pub struct RightArgs {
         #[structopt(flatten)]
         pub pipe: Pipeable,

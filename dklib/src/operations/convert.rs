@@ -61,11 +61,19 @@ fn image_size_preserving_ar(
 fn check_chart_size(chart_width: u32, chart_height: u32) {
     // ensure!
     if chart_height > u32::from(u16::MAX) {
-	throw!(Error::ChartTooBig{dimen: "height", value: chart_height, max: u16::MAX.into()});
+        throw!(Error::ChartTooBig {
+            dimen: "height",
+            value: chart_height,
+            max: u16::MAX.into()
+        });
     }
     // ensure!
     if chart_width > u32::from(u16::MAX) {
-	throw!(Error::ChartTooBig{dimen: "width", value: chart_width, max: u16::MAX.into()});
+        throw!(Error::ChartTooBig {
+            dimen: "width",
+            value: chart_width,
+            max: u16::MAX.into()
+        });
     }
 }
 
