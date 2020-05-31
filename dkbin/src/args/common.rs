@@ -1,4 +1,4 @@
-use anyhow::{Error, Result};
+use anyhow::Error;
 use dklib::chart::Chart;
 use fehler::throws;
 use std::io::{BufReader, Read, Write};
@@ -70,7 +70,7 @@ where
 fn pipe_command(
     in_path: Option<PathBuf>,
     out_path: Option<PathBuf>,
-    cmd: impl FnOnce(&mut dyn Read, &mut dyn Write) -> Result<()>,
+    cmd: impl FnOnce(&mut dyn Read, &mut dyn Write) -> dklib::Result<()>,
 ) {
     let mut rdr = pipe_in(&in_path)?;
     let mut wtr = pipe_out(&out_path)?;
@@ -106,8 +106,9 @@ where
     chart.write(&mut wtr)?;
 }
 
+// TODO: get these dklib::Result references out of here.
 #[throws]
-pub fn pipe_chart(pipe: Pipeable, cmd: impl FnOnce(&Chart) -> Result<Chart>) {
+pub fn pipe_chart(pipe: Pipeable, cmd: impl FnOnce(&Chart) -> dklib::Result<Chart>) {
     pipe_command(
         pipe.infile.chart_file_in,
         pipe.outfile.chart_file_out,

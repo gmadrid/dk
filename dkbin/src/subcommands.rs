@@ -1,5 +1,4 @@
-use crate::args::{chart_in, chart_out, chart_path_in, chart_path_out, commandargs, pipe_chart};
-use crate::args::{commandargs, Pipeable};
+use crate::args::{chart_path_in, chart_path_out, commandargs, Pipeable};
 use anyhow::{anyhow, Error};
 use dklib::{
     chart::Chart,
@@ -10,6 +9,7 @@ use dklib::{
     the_thing,
 };
 use fehler::throws;
+use std::io::{BufReader, Read, Write};
 use std::path::{Path, PathBuf};
 use structopt::StructOpt;
 
@@ -66,11 +66,15 @@ fn pipe_command(
 
 #[throws]
 fn pipe_chart(pipe: Pipeable, cmd: impl FnOnce(&Chart) -> dklib::Result<Chart>) {
-    pipe_command(pipe.in_file_name, pipe.out_file_name, |rdr, wtr| {
-        let chart = Chart::read(&mut BufReader::new(rdr))?;
-        let out_chart = cmd(&chart)?;
-        out_chart.write(wtr)
-    })?;
+    pipe_command(
+        pipe.infile.chart_file_in,
+        pipe.outfile.chart_file_out,
+        |rdr, wtr| {
+            let chart = Chart::read(&mut BufReader::new(rdr))?;
+            let out_chart = cmd(&chart)?;
+            out_chart.write(wtr)
+        },
+    )?;
 }
 
 #[throws]
@@ -152,12 +156,12 @@ pub enum SubCommands {
 pub fn image_convert(args: commandargs::ImageConvertArgs) {
     let original_image = image::open(args.image_name)?;
     let chart = convert_image_to_chart(&original_image, args.height, args.width)?;
-    chart_out(&args.outfile, &chart)?;
+    chart_out(&args.outfile.chart_file_out, &chart)?;
 }
 
 #[throws]
 pub fn knitchart(args: commandargs::KnitchartArgs) {
-    let chart = chart_in(&args.infile)?;
+    let chart = chart_in(&args.infile.chart_file_in)?;
 
     // TODO: use infilename if available and not provided.
     let mut out_file = args.image_name.unwrap_or_else(|| "chart.png".into());
