@@ -1,6 +1,6 @@
 use crate::chart::{Chart, Stitch};
-use anyhow::{anyhow, Error};
 use crate::Error;
+use anyhow::{anyhow, Error};
 use css_color_parser::Color;
 use fehler::{throw, throws};
 use std::str::FromStr;
