@@ -2,7 +2,7 @@ use crate::{
     chart::Chart,
     units::{Cols, Rows},
 };
-use anyhow::{anyhow, Error, Result};
+use crate::{Error, Result};
 use fehler::throws;
 use std::iter::Iterator;
 
@@ -33,7 +33,7 @@ fn find_top(chart: &Chart) -> Result<Rows> {
         }
     }
 
-    Err(anyhow!("Cannot trim an empty chart!"))
+    Err(Error::EmptyChart { msg: "Cannot trim" })
 }
 
 fn find_bottom(chart: &Chart) -> Result<Rows> {
@@ -45,7 +45,7 @@ fn find_bottom(chart: &Chart) -> Result<Rows> {
         }
     }
 
-    Err(anyhow!("Cannot trim an empty chart."))
+    Err(Error::EmptyChart { msg: "Cannot trim" })
 }
 
 fn find_left(chart: &Chart) -> Result<Cols> {
@@ -57,7 +57,7 @@ fn find_left(chart: &Chart) -> Result<Cols> {
         }
     }
 
-    Err(anyhow!("Cannot trim an empty chart"))
+    Err(Error::EmptyChart { msg: "Cannot trim" })
 }
 
 fn find_right(chart: &Chart) -> Result<Cols> {
@@ -69,7 +69,7 @@ fn find_right(chart: &Chart) -> Result<Cols> {
         }
     }
 
-    Err(anyhow!("Cannot trim an empty chart"))
+    Err(Error::EmptyChart { msg: "Cannot trim" })
 }
 
 #[rustfmt::skip::macros(chart, chart_str)]

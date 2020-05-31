@@ -28,6 +28,7 @@ fn main() {
         Merge        --> merge,
         Pad          --> pad,
         Reflect      --> reflect,
+        Repeat       --> repeat,
         Right        --> right,
         Split        --> split,
         Trim         --> trim,

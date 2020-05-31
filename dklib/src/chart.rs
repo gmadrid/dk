@@ -1,5 +1,5 @@
 use crate::units::{Cols, Height, Rows, Width};
-use anyhow::{anyhow, Error};
+use crate::Error;
 use css_color_parser::Color;
 use fehler::{throw, throws};
 use std::{
@@ -99,7 +99,7 @@ impl Chart {
     pub fn write_to_string(&self) -> String {
         let mut v = Vec::default();
         self.write(&mut v)?;
-        String::from_utf8(v)?
+        String::from_utf8(v).unwrap()
     }
 
     #[throws]
@@ -154,7 +154,7 @@ impl Chart {
             let size = rdr.read_line(&mut line)?;
             if size == 0 {
                 // Ran out of file before finding the header.
-                throw!(anyhow!("Missing header: 'CHART' not found."));
+                throw!(Error::IncompleteHeader);
             }
             if line.starts_with("CHART") {
                 break;
@@ -210,10 +210,18 @@ impl Chart {
     #[throws]
     fn range_check(&self, row: Rows, col: Cols) {
         if row >= self.rows {
-            throw!(anyhow!("Row {} should be less than {}", row, self.rows))
+            throw!(Error::RangeCheck {
+                name: "Row",
+                value: row.into(),
+                max: self.rows.into()
+            });
         }
         if col >= self.cols {
-            throw!(anyhow!("Col {} should be less than {}", col, self.cols))
+            throw!(Error::RangeCheck {
+                name: "Col",
+                value: col.into(),
+                max: self.cols.into()
+            });
         }
     }
 
@@ -275,7 +283,7 @@ mod test {
 
         let mut vec_out = Vec::new();
         chart.write(&mut vec_out)?;
-        let chart_out = String::from_utf8(vec_out)?;
+        let chart_out = String::from_utf8(vec_out).unwrap();
 
         assert_eq!(chart_out, chart_in);
     }
@@ -291,7 +299,7 @@ mod test {
 
         let mut vec_out = Vec::new();
         chart.write(&mut vec_out)?;
-        let chart_out = String::from_utf8(vec_out)?;
+        let chart_out = String::from_utf8(vec_out).unwrap();
 
         let fixed_chart = chart_str!(
             ".......",

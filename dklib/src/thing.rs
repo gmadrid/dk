@@ -1,8 +1,8 @@
+use crate::Error;
 use crate::{
     chart::Chart,
     units::{Height, Width},
 };
-use anyhow::Error;
 use fehler::throws;
 use image::{Rgb, RgbImage};
 use imageproc::drawing::{draw_filled_circle_mut, draw_filled_rect_mut, draw_line_segment_mut};

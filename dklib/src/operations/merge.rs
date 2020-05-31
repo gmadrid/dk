@@ -1,5 +1,6 @@
 use crate::chart::{Chart, Stitch};
 use anyhow::{anyhow, Error};
+use crate::Error;
 use css_color_parser::Color;
 use fehler::{throw, throws};
 use std::str::FromStr;
@@ -17,19 +18,19 @@ use std::str::FromStr;
 pub fn merge_charts(left: &Chart, right: &Chart) -> Chart {
     //ensure!
     if left.rows() != right.rows() {
-        throw!(anyhow!(
-            "Charts must have the same number of rows. ({} != {})",
-            left.rows(),
-            right.rows()
-        ));
+        throw!(Error::IncompatibleMerge {
+            dimen: "rows",
+            rows1: left.rows().into(),
+            rows2: right.rows().into()
+        });
     }
     //ensure!
     if left.cols() != right.cols() {
-        throw!(anyhow!(
-            "Charts must have the same number of rows. ({} != {})",
-            left.cols(),
-            right.cols()
-        ));
+        throw!(Error::IncompatibleMerge {
+            dimen: "columns",
+            rows1: left.cols().into(),
+            rows2: right.cols().into()
+        });
     }
 
     let color_one = Color::from_str("lightblue")?;

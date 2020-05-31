@@ -1,6 +1,6 @@
 [package]
-name = "dkbin"
-version = "0.2.0"
+name = "dk"
+version = "0.3.0"
 authors = ["George Madrid <gmadrid@gmail.com>"]
 edition = "2018"
 
