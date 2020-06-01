@@ -1,4 +1,7 @@
-use crate::args::{chart_path_in, chart_path_out, commandargs, Pipeable};
+use crate::args::{
+    chart_path_in, chart_path_out, commandargs,
+    common::{chart_in, chart_out, pipe_chart},
+};
 use anyhow::{anyhow, Error};
 use dklib::{
     chart::Chart,
@@ -9,7 +12,6 @@ use dklib::{
     the_thing,
 };
 use fehler::throws;
-use std::io::{BufReader, Read, Write};
 use std::path::{Path, PathBuf};
 use structopt::StructOpt;
 
@@ -28,68 +30,6 @@ pub fn make_knit_pathbuf(path: impl AsRef<Path>, suffix: Option<&str>) -> PathBu
     let mut result = PathBuf::from(owned);
     result.set_extension("knit");
     result
-}
-
-#[throws]
-fn pipe_in<P>(path: &Option<P>) -> Box<dyn Read>
-where
-    P: AsRef<Path>,
-{
-    let pipe: Box<dyn Read> = if let Some(p) = path {
-        Box::new(std::fs::File::open(p)?)
-    } else {
-        Box::new(std::io::stdin())
-    };
-    pipe
-}
-
-#[throws]
-fn pipe_out(path: &Option<PathBuf>) -> Box<dyn Write> {
-    let pipe: Box<dyn Write> = if let Some(p) = path {
-        Box::new(std::fs::File::create(p)?)
-    } else {
-        Box::new(std::io::stdout())
-    };
-    pipe
-}
-
-#[throws]
-fn pipe_command(
-    in_path: Option<PathBuf>,
-    out_path: Option<PathBuf>,
-    cmd: impl FnOnce(&mut dyn Read, &mut dyn Write) -> dklib::Result<()>,
-) {
-    let mut rdr = pipe_in(&in_path)?;
-    let mut wtr = pipe_out(&out_path)?;
-    cmd(rdr.as_mut(), wtr.as_mut())?;
-}
-
-#[throws]
-fn pipe_chart(pipe: Pipeable, cmd: impl FnOnce(&Chart) -> dklib::Result<Chart>) {
-    pipe_command(
-        pipe.infile.chart_file_in,
-        pipe.outfile.chart_file_out,
-        |rdr, wtr| {
-            let chart = Chart::read(&mut BufReader::new(rdr))?;
-            let out_chart = cmd(&chart)?;
-            out_chart.write(wtr)
-        },
-    )?;
-}
-
-#[throws]
-fn chart_in<P>(in_path: &Option<P>) -> Chart
-where
-    P: AsRef<Path>,
-{
-    let rdr = pipe_in(in_path)?;
-    Chart::read(&mut BufReader::new(rdr))?
-}
-
-#[throws]
-fn chart_out(out_path: &Option<PathBuf>, chart: &Chart) {
-    let mut wtr = pipe_out(out_path)?;
-    chart.write(&mut wtr)?;
 }
 
 #[derive(Debug, StructOpt)]
@@ -156,12 +96,12 @@ pub enum SubCommands {
 pub fn image_convert(args: commandargs::ImageConvertArgs) {
     let original_image = image::open(args.image_name)?;
     let chart = convert_image_to_chart(&original_image, args.height, args.width)?;
-    chart_out(&args.outfile.chart_file_out, &chart)?;
+    chart_out(&args.outfile, &chart)?;
 }
 
 #[throws]
 pub fn knitchart(args: commandargs::KnitchartArgs) {
-    let chart = chart_in(&args.infile.chart_file_in)?;
+    let chart = chart_in(&args.infile)?;
 
     // TODO: use infilename if available and not provided.
     let mut out_file = args.image_name.unwrap_or_else(|| "chart.png".into());
@@ -199,9 +139,9 @@ pub fn reflect(args: commandargs::ReflectArgs) {
 
 #[throws]
 pub fn repeat(args: commandargs::RepeatArgs) {
-    let chart = chart_in(&args.in_file_name)?;
+    let chart = chart_in(&args.infile)?;
     let repeated = repeat_chart(&chart, args.horiz, args.vert)?;
-    chart_out(&args.out_file_name, &repeated)?;
+    chart_out(&args.outfile, &repeated)?;
 }
 
 #[throws]

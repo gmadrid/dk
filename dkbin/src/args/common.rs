@@ -67,7 +67,7 @@ where
 }
 
 #[throws]
-fn pipe_command(
+pub fn pipe_command(
     in_path: Option<PathBuf>,
     out_path: Option<PathBuf>,
     cmd: impl FnOnce(&mut dyn Read, &mut dyn Write) -> dklib::Result<()>,

@@ -1,4 +1,4 @@
-mod common;
+pub mod common;
 
 use std::path::PathBuf;
 use structopt::StructOpt;
@@ -12,7 +12,7 @@ pub use common::{
 /// and "flatten" them.
 pub mod commandargs {
     use super::*;
-    use crate::args::common::ChartFileIn;
+    use crate::args::common::{ChartFileIn, ChartFileOut};
 
     #[derive(Debug, StructOpt)]
     pub struct ImageConvertArgs {
@@ -73,11 +73,11 @@ pub mod commandargs {
 
     #[derive(Debug, StructOpt)]
     pub struct RepeatArgs {
-        #[structopt(long, short, parse(from_os_str))]
-        pub in_file_name: Option<PathBuf>,
+        #[structopt(flatten)]
+        pub infile: ChartFileIn,
 
-        #[structopt(long, short, parse(from_os_str))]
-        pub out_file_name: Option<PathBuf>,
+        #[structopt(flatten)]
+        pub outfile: ChartFileOut,
 
         #[structopt(long, short, default_value = "1")]
         pub horiz: u8,
