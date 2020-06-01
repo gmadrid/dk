@@ -15,6 +15,7 @@ pub fn repeat_chart(chart: &Chart, h: u8, v: u8) -> Chart {
 
     let mut repeated = Chart::new(chart.cols() * h, chart.rows() * v);
 
+    // TODO: reimplement this using "stamp"
     for h_repeat in 0..h {
         for v_repeat in 0..v {
             for inner_col in chart.cols() {

@@ -5,10 +5,6 @@ use crate::args::{
 use anyhow::{anyhow, Error};
 use dklib::{
     chart::Chart,
-    operations::{
-        convert_image_to_chart, merge_charts, pad_chart, reflect_chart, repeat_chart, split_chart,
-        trim_chart, zip_charts,
-    },
     the_thing,
 };
 use fehler::throws;
@@ -95,7 +91,7 @@ pub enum SubCommands {
 #[throws]
 pub fn image_convert(args: commandargs::ImageConvertArgs) {
     let original_image = image::open(args.image_name)?;
-    let chart = convert_image_to_chart(&original_image, args.height, args.width)?;
+    let chart = Chart::from_image(&original_image, args.height, args.width)?;
     chart_out(&args.outfile, &chart)?;
 }
 
@@ -111,7 +107,7 @@ pub fn knitchart(args: commandargs::KnitchartArgs) {
 
 #[throws]
 pub fn left(args: commandargs::LeftArgs) {
-    pipe_chart(args.pipe, |chart| Ok(split_chart(chart)?.0))?;
+    pipe_chart(args.pipe, |chart| Ok(chart.split()?.0))?;
 }
 
 #[throws]
@@ -119,7 +115,7 @@ pub fn merge(args: commandargs::MergeArgs) {
     let left = chart_path_in(&Some(&args.left))?;
     let right = chart_path_in(&Some(&args.right))?;
 
-    let merged = merge_charts(&left, &right)?;
+    let merged = left.merge_with(&right)?;
     chart_path_out(&args.out_file_name, &merged)?;
 
     // TODO: find a more disciplined way to do this.
@@ -129,24 +125,24 @@ pub fn merge(args: commandargs::MergeArgs) {
 
 #[throws]
 pub fn pad(args: commandargs::PadArgs) {
-    pipe_chart(args.pipe, pad_chart)?;
+    pipe_chart(args.pipe, |chart| chart.pad())?;
 }
 
 #[throws]
 pub fn reflect(args: commandargs::ReflectArgs) {
-    pipe_chart(args.pipe, reflect_chart)?;
+    pipe_chart(args.pipe, |chart| chart.reflect())?;
 }
 
 #[throws]
 pub fn repeat(args: commandargs::RepeatArgs) {
     let chart = chart_in(&args.infile)?;
-    let repeated = repeat_chart(&chart, args.horiz, args.vert)?;
+    let repeated = chart.repeat(args.horiz, args.vert)?;
     chart_out(&args.outfile, &repeated)?;
 }
 
 #[throws]
 pub fn right(args: commandargs::RightArgs) {
-    pipe_chart(args.pipe, |chart| Ok(split_chart(chart)?.1))?;
+    pipe_chart(args.pipe, |chart| Ok(chart.split()?.1))?;
 }
 
 #[throws]
@@ -166,14 +162,14 @@ pub fn split(args: commandargs::SplitArgs) {
     let left_file_name = make_knit_pathbuf(&stem, Some("-left"))?;
     let right_file_name = make_knit_pathbuf(&stem, Some("-right"))?;
 
-    let (left_chart, right_chart) = split_chart(&chart)?;
+    let (left_chart, right_chart) = chart.split()?;
     left_chart.write_to_file(left_file_name)?;
     right_chart.write_to_file(right_file_name)?;
 }
 
 #[throws]
 pub fn trim(args: commandargs::TrimArgs) {
-    pipe_chart(args.pipe, trim_chart)?;
+    pipe_chart(args.pipe, |chart| chart.trim())?;
 }
 
 #[throws]
@@ -181,7 +177,7 @@ pub fn zip(args: commandargs::ZipArgs) {
     let left_chart = Chart::read_from_file(args.left_file_name)?;
     let right_chart = Chart::read_from_file(args.right_file_name)?;
 
-    let zipped = zip_charts(&left_chart, &right_chart)?;
+    let zipped = left_chart.zip(&right_chart)?;
 
     let out_file_name = args
         .out_file_name

@@ -1,7 +1,17 @@
+mod convert;
+mod merge;
+mod pad;
+mod reflect;
+mod repeat;
+mod split;
+mod trim;
+mod zip;
+
 use crate::units::{Cols, Height, Rows, Width};
 use crate::Error;
 use css_color_parser::Color;
 use fehler::{throw, throws};
+use image::DynamicImage;
 use std::{
     cmp::max,
     convert::{TryFrom, TryInto},
@@ -242,6 +252,48 @@ impl Chart {
 impl AsRef<Chart> for Chart {
     fn as_ref(&self) -> &Chart {
         self
+    }
+}
+
+impl Chart {
+    #[throws]
+    pub fn from_image(image: &DynamicImage, height: Option<u16>, width: Option<u16>) -> Chart {
+        convert::convert_image_to_chart(image, height, width)?
+    }
+
+    #[throws]
+    pub fn merge_with(&self, other: &Chart) -> Chart {
+        merge::merge_charts(self, other)?
+    }
+
+    #[throws]
+    pub fn pad(&self) -> Chart {
+        pad::pad_chart(self)?
+    }
+
+    #[throws]
+    pub fn reflect(&self) -> Chart {
+        reflect::reflect_chart(self)?
+    }
+
+    #[throws]
+    pub fn repeat(&self, h: u8, v: u8) -> Chart {
+        repeat::repeat_chart(self, h, v)?
+    }
+
+    #[throws]
+    pub fn split(&self) -> (Chart, Chart) {
+        split::split_chart(self)?
+    }
+
+    #[throws]
+    pub fn trim(&self) -> Chart {
+        trim::trim_chart(self)?
+    }
+
+    #[throws]
+    pub fn zip(&self, right: &Chart) -> Chart {
+        zip::zip_charts(self, right)?
     }
 }
 
