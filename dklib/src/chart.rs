@@ -4,6 +4,7 @@ mod pad;
 mod reflect;
 mod repeat;
 mod split;
+mod stamp;
 mod trim;
 mod zip;
 
@@ -284,6 +285,11 @@ impl Chart {
     #[throws]
     pub fn split(&self) -> (Chart, Chart) {
         split::split_chart(self)?
+    }
+
+    #[throws]
+    pub fn stamp(&self, stamp: &Chart, h_offset: Cols, v_offset: Rows) -> Chart {
+        stamp::stamp_chart(self, stamp, h_offset, v_offset)?
     }
 
     #[throws]

@@ -76,6 +76,10 @@ pub enum SubCommands {
         #[structopt(flatten)]
         args: commandargs::SplitArgs,
     },
+    Stamp {
+        #[structopt(flatten)]
+        args: commandargs::StampArgs,
+    },
     /// Trim all of the blanks and knit stitches off the outside of a chart.
     Trim {
         #[structopt(flatten)]
@@ -147,14 +151,14 @@ pub fn right(args: commandargs::RightArgs) {
 
 #[throws]
 pub fn split(args: commandargs::SplitArgs) {
-    let chart = chart_path_in(&args.in_file_name)?;
+    let chart = chart_in(&args.infile)?;
 
     // If the out stem is provided, use it. Fallback on the input file name.
     // If that's not present (we read from stdin), then just pick "split".
     let stem = args
         .out_file_stem
         .as_ref()
-        .or_else(|| args.in_file_name.as_ref())
+        .or_else(|| args.infile.chart_file_in.as_ref())
         .map_or_else(|| PathBuf::from("split"), |p| p.to_owned());
 
     // TODO: check for existing filenames.
@@ -165,6 +169,16 @@ pub fn split(args: commandargs::SplitArgs) {
     let (left_chart, right_chart) = chart.split()?;
     left_chart.write_to_file(left_file_name)?;
     right_chart.write_to_file(right_file_name)?;
+}
+
+#[throws]
+pub fn stamp(args: commandargs::StampArgs) {
+    let chart = chart_path_in(&Some(args.chart_file))?;
+    let stamp = chart_path_in(&Some(args.stamp_file))?;
+    let h_offset = args.h_offset.into();
+    let v_offset = args.v_offset.into();
+    let stamped = chart.stamp(&stamp, h_offset, v_offset)?;
+    chart_out(&args.outfile, &stamped)?;
 }
 
 #[throws]

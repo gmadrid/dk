@@ -94,11 +94,29 @@ pub mod commandargs {
 
     #[derive(Debug, StructOpt)]
     pub struct SplitArgs {
-        #[structopt(parse(from_os_str))]
-        pub in_file_name: Option<PathBuf>,
+        #[structopt(flatten)]
+        pub infile: ChartFileIn,
 
         #[structopt(long = "output_stem", short = "o", parse(from_os_str))]
         pub out_file_stem: Option<PathBuf>,
+    }
+
+    #[derive(Debug, StructOpt)]
+    pub struct StampArgs {
+        #[structopt(short = "h", default_value = "0")]
+        pub h_offset: u8,
+
+        #[structopt(short = "v", default_value = "0")]
+        pub v_offset: u8,
+
+        #[structopt(flatten)]
+        pub outfile: ChartFileOut,
+
+        #[structopt(parse(from_os_str))]
+        pub chart_file: PathBuf,
+
+        #[structopt(parse(from_os_str))]
+        pub stamp_file: PathBuf,
     }
 
     #[derive(Debug, StructOpt)]

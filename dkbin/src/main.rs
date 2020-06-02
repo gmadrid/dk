@@ -31,6 +31,7 @@ fn main() {
         Repeat       --> repeat,
         Right        --> right,
         Split        --> split,
+        Stamp        --> stamp,
         Trim         --> trim,
         Zip          --> zip
     );
