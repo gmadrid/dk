@@ -175,9 +175,7 @@ pub fn split(args: commandargs::SplitArgs) {
 pub fn stamp(args: commandargs::StampArgs) {
     let chart = chart_path_in(&Some(args.chart_file))?;
     let stamp = chart_path_in(&Some(args.stamp_file))?;
-    let h_offset = args.h_offset.into();
-    let v_offset = args.v_offset.into();
-    let stamped = chart.stamp(&stamp, h_offset, v_offset)?;
+    let stamped = chart.stamp(&stamp, args.h_offset.into(), args.v_offset.into())?;
     chart_out(&args.outfile, &stamped)?;
 }
 
