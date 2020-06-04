@@ -60,6 +60,9 @@ pub mod commandargs {
     pub struct PadArgs {
         #[structopt(flatten)]
         pub pipe: common::Pipeable,
+
+        #[structopt(long)]
+        pub purl: bool,
     }
 
     #[derive(Debug, StructOpt)]

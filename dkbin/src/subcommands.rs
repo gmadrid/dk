@@ -126,7 +126,10 @@ pub fn merge(args: commandargs::MergeArgs) {
 
 #[throws]
 pub fn pad(args: commandargs::PadArgs) {
-    pipe_chart(args.pipe, |chart| chart.pad())?;
+    let ch = if args.purl { '*' } else { '.' };
+    let chart = chart_in(&args.pipe.infile)?;
+    let padded = chart.pad(ch)?;
+    chart_out(&args.pipe.outfile, &padded)?;
 }
 
 #[throws]

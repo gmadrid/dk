@@ -3,13 +3,13 @@ use crate::Error;
 use fehler::throws;
 
 #[throws]
-pub fn pad_chart(chart: &Chart) -> Chart {
+pub fn pad_chart(chart: &Chart, ch: char) -> Chart {
     let mut padded = Chart::new(chart.cols() + 2, chart.rows() + 2);
 
     // Inefficient, but easy.
     for row in padded.rows() {
         for col in padded.cols() {
-            padded.set_stitch(row, col, Stitch::new('.', None))?;
+            padded.set_stitch(row, col, Stitch::new(ch, None))?;
         }
     }
 
@@ -39,7 +39,7 @@ mod test {
             "******"
         )?;
 
-        let padded = pad_chart(&chart)?;
+        let padded = pad_chart(&chart, '.')?;
 
         let padded_str = chart_str!(
             "........",

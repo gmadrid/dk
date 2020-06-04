@@ -268,8 +268,8 @@ impl Chart {
     }
 
     #[throws]
-    pub fn pad(&self) -> Chart {
-        pad::pad_chart(self)?
+    pub fn pad(&self, ch: char) -> Chart {
+        pad::pad_chart(self, ch)?
     }
 
     #[throws]
