@@ -27,7 +27,7 @@ pub enum Error {
         rows2: u32,
     },
 
-    #[error("Header terminated too early")]
+    #[error("Header terminated too early. Did you forget 'CHART'?")]
     IncompleteHeader,
 
     #[error("{name} {value} should be less than {max}")]

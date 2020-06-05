@@ -10,8 +10,9 @@ mod zip;
 
 use crate::units::{Cols, Height, Rows, Width};
 use crate::Error;
+use assure::assure;
 use css_color_parser::Color;
-use fehler::{throw, throws};
+use fehler::throws;
 use image::DynamicImage;
 use std::{
     cmp::max,
@@ -163,10 +164,7 @@ impl Chart {
         loop {
             line.clear();
             let size = rdr.read_line(&mut line)?;
-            if size == 0 {
-                // Ran out of file before finding the header.
-                throw!(Error::IncompleteHeader);
-            }
+            assure!(size > 0, Error::IncompleteHeader);
             if line.starts_with("CHART") {
                 break;
             }
@@ -220,20 +218,22 @@ impl Chart {
 
     #[throws]
     fn range_check(&self, row: Rows, col: Cols) {
-        if row >= self.rows {
-            throw!(Error::RangeCheck {
+        assure!(
+            row < self.rows,
+            Error::RangeCheck {
                 name: "Row",
                 value: row.into(),
                 max: self.rows.into()
-            });
-        }
-        if col >= self.cols {
-            throw!(Error::RangeCheck {
+            }
+        );
+        assure!(
+            col < self.cols,
+            Error::RangeCheck {
                 name: "Col",
                 value: col.into(),
                 max: self.cols.into()
-            });
-        }
+            }
+        );
     }
 
     #[throws]
