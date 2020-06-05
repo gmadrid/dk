@@ -1,17 +1,12 @@
 use crate::chart::Chart;
 use crate::Error;
-use fehler::{throw, throws};
+use assure::assure;
+use fehler::throws;
 
 #[throws]
 pub fn repeat_chart(chart: &Chart, h: u8, v: u8) -> Chart {
-    // ensure!
-    if h < 1 {
-        throw!(Error::ZeroNotLegal { argname: "h" });
-    }
-    // ensure!
-    if v < 1 {
-        throw!(Error::ZeroNotLegal { argname: "v" });
-    }
+    assure!(h > 0, Error::ZeroNotLegal { argname: "h" });
+    assure!(v > 0, Error::ZeroNotLegal { argname: "v" });
 
     let mut repeated = Chart::new(chart.cols() * h, chart.rows() * v);
 

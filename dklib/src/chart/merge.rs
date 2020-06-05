@@ -1,7 +1,8 @@
 use crate::chart::{Chart, Stitch};
 use crate::Error;
+use assure::assure;
 use css_color_parser::Color;
-use fehler::{throw, throws};
+use fehler::throws;
 use std::str::FromStr;
 
 // Merge two charts, `left` and `right`.
@@ -15,22 +16,22 @@ use std::str::FromStr;
 
 #[throws]
 pub fn merge_charts(left: &Chart, right: &Chart) -> Chart {
-    //ensure!
-    if left.rows() != right.rows() {
-        throw!(Error::IncompatibleMerge {
+    assure!(
+        left.rows() == right.rows(),
+        Error::IncompatibleMerge {
             dimen: "rows",
             rows1: left.rows().into(),
             rows2: right.rows().into()
-        });
-    }
-    //ensure!
-    if left.cols() != right.cols() {
-        throw!(Error::IncompatibleMerge {
-            dimen: "columns",
-            rows1: left.cols().into(),
-            rows2: right.cols().into()
-        });
-    }
+        }
+    );
+    assure!(
+        left.cols() == right.cols(),
+        Error::IncompatibleMerge {
+            dimen: "rows",
+            rows1: left.rows().into(),
+            rows2: right.rows().into()
+        }
+    );
 
     let color_one = Color::from_str("lightblue")?;
     let color_two = Color::from_str("goldenrod")?;

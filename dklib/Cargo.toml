@@ -9,6 +9,7 @@ edition = "2018"
 name = "dklib"
 
 [dependencies]
+assure = { path = "../../assure" }
 css-color-parser = "0.1.2"
 fehler = { git = "https://github.com/gmadrid/fehler.git", version = "1.0.0" }
 image = "0.23.4"
