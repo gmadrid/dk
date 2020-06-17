@@ -7,6 +7,7 @@ use dklib::{chart::Chart, the_thing};
 use fehler::throws;
 use std::path::{Path, PathBuf};
 use structopt::StructOpt;
+use uboat::Uboat;
 
 /// Makes a pathbuf from `path` but with the `.knit` extension.
 /// If `suffix` is provided, then append it to the file stem also.
@@ -25,7 +26,7 @@ pub fn make_knit_pathbuf(path: impl AsRef<Path>, suffix: Option<&str>) -> PathBu
     result
 }
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, StructOpt, Uboat)]
 #[structopt(name = "dk", about = "A tool for making double-knitting patterns.")]
 pub enum SubCommands {
     /// Convert an image to a knit chart based on color values.
@@ -90,29 +91,29 @@ pub enum SubCommands {
 }
 
 #[throws]
-pub fn image_convert(args: commandargs::ImageConvertArgs) {
-    let original_image = image::open(args.image_name)?;
+pub fn image_convert(args: &commandargs::ImageConvertArgs) {
+    let original_image = image::open(&args.image_name)?;
     let chart = Chart::from_image(&original_image, args.height, args.width)?;
     chart_out(&args.outfile, &chart)?;
 }
 
 #[throws]
-pub fn knitchart(args: commandargs::KnitchartArgs) {
+pub fn knitchart(args: &commandargs::KnitchartArgs) {
     let chart = chart_in(&args.infile)?;
 
     // TODO: use infilename if available and not provided.
-    let mut out_file = args.image_name.unwrap_or_else(|| "chart.png".into());
+    let mut out_file = args.image_name.clone().unwrap_or_else(|| PathBuf::from("chart.png"));
     out_file.set_extension("png");
     the_thing(&out_file, &chart)?;
 }
 
 #[throws]
-pub fn left(args: commandargs::LeftArgs) {
-    pipe_chart(args.pipe, |chart| Ok(chart.split()?.0))?;
+pub fn left(args: &commandargs::LeftArgs) {
+    pipe_chart(&args.pipe, |chart| Ok(chart.split()?.0))?;
 }
 
 #[throws]
-pub fn merge(args: commandargs::MergeArgs) {
+pub fn merge(args: &commandargs::MergeArgs) {
     let left = chart_path_in(&Some(&args.left))?;
     let right = chart_path_in(&Some(&args.right))?;
 
@@ -125,7 +126,7 @@ pub fn merge(args: commandargs::MergeArgs) {
 }
 
 #[throws]
-pub fn pad(args: commandargs::PadArgs) {
+pub fn pad(args: &commandargs::PadArgs) {
     let ch = if args.purl { '*' } else { '.' };
     let chart = chart_in(&args.pipe.infile)?;
     let padded = chart.pad(ch)?;
@@ -133,24 +134,24 @@ pub fn pad(args: commandargs::PadArgs) {
 }
 
 #[throws]
-pub fn reflect(args: commandargs::ReflectArgs) {
-    pipe_chart(args.pipe, |chart| chart.reflect())?;
+pub fn reflect(args: &commandargs::ReflectArgs) {
+    pipe_chart(&args.pipe, |chart| chart.reflect())?;
 }
 
 #[throws]
-pub fn repeat(args: commandargs::RepeatArgs) {
+pub fn repeat(args: &commandargs::RepeatArgs) {
     let chart = chart_in(&args.infile)?;
     let repeated = chart.repeat(args.horiz, args.vert)?;
     chart_out(&args.outfile, &repeated)?;
 }
 
 #[throws]
-pub fn right(args: commandargs::RightArgs) {
-    pipe_chart(args.pipe, |chart| Ok(chart.split()?.1))?;
+pub fn right(args: &commandargs::RightArgs) {
+    pipe_chart(&args.pipe, |chart| Ok(chart.split()?.1))?;
 }
 
 #[throws]
-pub fn split(args: commandargs::SplitArgs) {
+pub fn split(args: &commandargs::SplitArgs) {
     let chart = chart_in(&args.infile)?;
 
     // If the out stem is provided, use it. Fallback on the input file name.
@@ -172,27 +173,28 @@ pub fn split(args: commandargs::SplitArgs) {
 }
 
 #[throws]
-pub fn stamp(args: commandargs::StampArgs) {
-    let chart = chart_path_in(&Some(args.chart_file))?;
-    let stamp = chart_path_in(&Some(args.stamp_file))?;
+pub fn stamp(args: &commandargs::StampArgs) {
+    let chart = chart_path_in(&Some(&args.chart_file))?;
+    let stamp = chart_path_in(&Some(&args.stamp_file))?;
     let stamped = chart.stamp(&stamp, args.h_offset.into(), args.v_offset.into())?;
     chart_out(&args.outfile, &stamped)?;
 }
 
 #[throws]
-pub fn trim(args: commandargs::TrimArgs) {
-    pipe_chart(args.pipe, |chart| chart.trim())?;
+pub fn trim(args: &commandargs::TrimArgs) {
+    pipe_chart(&args.pipe, |chart| chart.trim())?;
 }
 
 #[throws]
-pub fn zip(args: commandargs::ZipArgs) {
-    let left_chart = Chart::read_from_file(args.left_file_name)?;
-    let right_chart = Chart::read_from_file(args.right_file_name)?;
+pub fn zip(args: &commandargs::ZipArgs) {
+    let left_chart = Chart::read_from_file(&args.left_file_name)?;
+    let right_chart = Chart::read_from_file(&args.right_file_name)?;
 
     let zipped = left_chart.zip(&right_chart)?;
 
     let out_file_name = args
         .out_file_name
+        .as_ref()
         .map(|pb| make_knit_pathbuf(pb, None))
         .transpose()?;
     chart_path_out(&out_file_name, &zipped)?;

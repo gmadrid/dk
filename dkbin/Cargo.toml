@@ -10,3 +10,4 @@ dklib = { path = "../dklib" }
 fehler = { git = "https://github.com/gmadrid/fehler.git", version = "1.0.0" }
 structopt = "0.3.14"
 image = "0.23.4"
+uboat = { path = "../../uboat" }

@@ -67,11 +67,11 @@ where
 }
 
 #[throws]
-pub fn pipe_command(
-    in_path: Option<PathBuf>,
-    out_path: Option<PathBuf>,
+pub fn pipe_command<P,Q>(
+    in_path: Option<P>,
+    out_path: Option<Q>,
     cmd: impl FnOnce(&mut dyn Read, &mut dyn Write) -> dklib::Result<()>,
-) {
+) where P: AsRef<Path>, Q: AsRef<Path> {
     let mut rdr = pipe_in(&in_path)?;
     let mut wtr = pipe_out(&out_path)?;
     cmd(rdr.as_mut(), wtr.as_mut())?;
@@ -108,10 +108,10 @@ where
 
 // TODO: get these dklib::Result references out of here.
 #[throws]
-pub fn pipe_chart(pipe: Pipeable, cmd: impl FnOnce(&Chart) -> dklib::Result<Chart>) {
+pub fn pipe_chart(pipe: &Pipeable, cmd: impl FnOnce(&Chart) -> dklib::Result<Chart>) {
     pipe_command(
-        pipe.infile.chart_file_in,
-        pipe.outfile.chart_file_out,
+        pipe.infile.chart_file_in.as_ref(),
+        pipe.outfile.chart_file_out.as_ref(),
         |rdr, wtr| {
             let chart = Chart::read(&mut BufReader::new(rdr))?;
             let out_chart = cmd(&chart)?;
