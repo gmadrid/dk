@@ -3,4 +3,5 @@
 members = [
     "dkbin",
     "dklib",
+    "dkparse"
 ]
