@@ -1,6 +1,6 @@
-use fehler::{throws};
 use crate::Error;
 use assure::assure;
+use fehler::throws;
 
 #[derive(Debug, Copy, Clone, Ord, PartialOrd, Eq, PartialEq)]
 pub struct Location {
@@ -40,7 +40,7 @@ impl std::fmt::Display for Location {
 #[derive(Debug, Clone)]
 pub struct Span {
     start: Location,
-    end: Location
+    end: Location,
 }
 
 impl Span {
@@ -49,7 +49,13 @@ impl Span {
     /// end will be the location _after_ the last char.
     /// NOTE: end may point past the end of the file.
     pub fn new(start: Location, end: Location) -> Span {
-        assure!(start < end, Error::InvertedSpan { first: start, second: end});
+        assure!(
+            start < end,
+            Error::InvertedSpan {
+                first: start,
+                second: end
+            }
+        );
         Span { start, end }
     }
 }

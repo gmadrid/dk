@@ -2,15 +2,12 @@ mod parser;
 mod span;
 mod spanning_reader;
 
-use crate::span::{Location};
+use crate::span::Location;
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error("Inverted span, start ({first}) must come before end ({second}).")]
-    InvertedSpan {
-        first: Location,
-        second: Location,
-    },
+    InvertedSpan { first: Location, second: Location },
 
     #[error("An IO error occurred: {source}")]
     Io {
@@ -19,10 +16,7 @@ pub enum Error {
     },
 
     #[error("TODO Fill in this message")]
-    ParseError {
-        msg: String,
-        location: Location,
-    },
+    ParseError { msg: String, location: Location },
 
     #[error("TODO: Get rid of this, and make it a parse error")]
     ParseIntError {

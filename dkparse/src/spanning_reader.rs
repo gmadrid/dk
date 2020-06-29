@@ -62,8 +62,7 @@ impl SpanningReader {
     }
 }
 
-impl SpanningRead for SpanningReader
-{
+impl SpanningRead for SpanningReader {
     fn location(&self) -> Location {
         self.location
     }
