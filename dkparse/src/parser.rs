@@ -3,8 +3,28 @@ use crate::spanning_reader::{SpanningRead, SpanningReader};
 use crate::Error;
 use fehler::{throw, throws};
 
-trait ParseNode {
+trait ParseNodeBase {
+    type ValueType;
+    fn span(&self) -> &Span;
+    fn value(&self) -> &Self::ValueType;
+}
+
+trait ParseNode: ParseNodeBase {
     fn in_first_set(ch: char) -> bool;
+}
+
+macro_rules! parse_node_base {
+    ( $pnb:ty, $vt:ty ) => {
+        impl ParseNodeBase for $pnb {
+            type ValueType = $vt;
+            fn span(&self) -> &Span {
+                &self.span
+            }
+            fn value(&self) -> &Self::ValueType {
+                &self.value
+            }
+        }
+    };
 }
 
 #[derive(Debug)]
@@ -12,12 +32,20 @@ struct Bool {
     value: bool,
     span: Span,
 }
+parse_node_base!(Bool, bool);
+
+impl ParseNode for Bool {
+    fn in_first_set(ch: char) -> bool {
+        ch == 't' || ch == 'f'
+    }
+}
 
 #[derive(Debug)]
 struct Ident {
     value: String,
     span: Span,
 }
+parse_node_base!(Ident, String);
 
 impl ParseNode for Ident {
     fn in_first_set(ch: char) -> bool {
@@ -30,6 +58,7 @@ struct NumberConstant {
     value: i32,
     span: Span,
 }
+parse_node_base!(NumberConstant, i32);
 
 impl ParseNode for NumberConstant {
     fn in_first_set(ch: char) -> bool {
@@ -42,6 +71,7 @@ struct StringConstant {
     value: String,
     span: Span,
 }
+parse_node_base!(StringConstant, String);
 
 impl ParseNode for StringConstant {
     fn in_first_set(ch: char) -> bool {
