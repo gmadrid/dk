@@ -1,38 +1,52 @@
-use crate::span::Span;
+use crate::span::{Location, Span};
 use crate::spanning_reader::{SpanningRead, SpanningReader};
 use crate::Error;
 use fehler::{throw, throws};
 
+trait ParseNode {
+    fn in_first_set(ch: char) -> bool;
+}
+
 #[derive(Debug)]
-struct BoolTerminal {
+struct Bool {
     value: bool,
     span: Span,
 }
 
 #[derive(Debug)]
-struct IdentTerminal {
+struct Ident {
     value: String,
     span: Span,
 }
 
+impl ParseNode for Ident {
+    fn in_first_set(ch: char) -> bool {
+        ch == '_' || ch.is_ascii_alphabetic()
+    }
+}
+
 #[derive(Debug)]
-struct NumberTerminal {
+struct NumberConstant {
     value: i32,
     span: Span,
 }
 
+impl ParseNode for NumberConstant {
+    fn in_first_set(ch: char) -> bool {
+        ch == '-' || ch.is_ascii_digit()
+    }
+}
+
 #[derive(Debug)]
-struct StringTerminal {
+struct StringConstant {
     value: String,
     span: Span,
 }
 
-#[derive(Debug)]
-enum Token {
-    Bool(BoolTerminal),
-    Ident(IdentTerminal),
-    Number(NumberTerminal),
-    String(StringTerminal),
+impl ParseNode for StringConstant {
+    fn in_first_set(ch: char) -> bool {
+        ch == '"'
+    }
 }
 
 pub struct Parser<SR>
@@ -40,18 +54,6 @@ where
     SR: SpanningRead,
 {
     sr: SR,
-}
-
-fn in_first_ident(ch: char) -> bool {
-    ch == '_' || ch.is_ascii_alphabetic()
-}
-
-fn in_first_number(ch: char) -> bool {
-    ch == '-' || ch.is_ascii_digit()
-}
-
-fn in_first_string(ch: char) -> bool {
-    ch == '"'
 }
 
 impl<SR> Parser<SR>
@@ -86,7 +88,7 @@ where
     }
 
     #[throws]
-    fn parse_string_terminal(&mut self) -> Token {
+    fn parse_string_constant(&mut self) -> StringConstant {
         let start = self.sr.location();
 
         self.expect_char('"')?;
@@ -105,19 +107,19 @@ where
         self.sr.next_char();
 
         let end = self.sr.location();
-        Token::String(StringTerminal {
+        StringConstant {
             value,
             span: Span::new(start, end)?,
-        })
+        }
     }
 
     #[throws]
-    fn parse_number_terminal(&mut self) -> Token {
+    fn parse_number_constant(&mut self) -> NumberConstant {
         let start = self.sr.location();
 
         let mut number_str = String::new();
         if let Some(first) = self.sr.peek_char() {
-            if !in_first_number(first) {
+            if !NumberConstant::in_first_set(first) {
                 throw!(Error::ParseError {
                     msg: format!("Expected 0-9"),
                     location: start,
@@ -146,16 +148,16 @@ where
         let end = self.sr.location();
         let span = Span::new(start, end)?;
 
-        Token::Number(NumberTerminal { value, span })
+        NumberConstant { value, span }
     }
 
     #[throws]
-    fn parse_ident_terminal(&mut self) -> Token {
+    fn parse_ident_or_bool(&mut self) -> (Option<Ident>, Option<Bool>) {
         let start = self.sr.location();
 
         let mut value = String::new();
         if let Some(first) = self.sr.peek_char() {
-            if !in_first_ident(first) {
+            if !Ident::in_first_set(first) {
                 throw!(Error::ParseError {
                     msg: format!("Expected '_' or alphabetic."),
                     location: start,
@@ -182,13 +184,16 @@ where
         let span = Span::new(start, end)?;
 
         if &value == "true" || &value == "false" {
-            return Token::Bool(BoolTerminal {
-                value: &value == "true",
-                span,
-            });
+            return (
+                None,
+                Some(Bool {
+                    value: &value == "true",
+                    span,
+                }),
+            );
         }
 
-        Token::Ident(IdentTerminal { value, span })
+        (Some(Ident { value, span }), None)
     }
 }
 
@@ -204,26 +209,21 @@ mod test {
     #[test]
     fn test_string_parse() {
         let mut p = with_str("\"foo\"");
-        let token = p.parse_string_terminal().unwrap();
-        if let Token::String(string_terminal) = token {
-            assert_eq!(string_terminal.value, "foo");
-        // TODO: test span
-        } else {
-            panic!("Wrong token type: {:?}", token);
-        }
+        let string_constant = p.parse_string_constant().unwrap();
+        assert_eq!(string_constant.value, "foo");
     }
 
     #[test]
     fn test_string_no_quotes() {
         // Missing lead quote.
         let mut p = with_str("foo\"");
-        assert!(p.parse_string_terminal().is_err());
+        assert!(p.parse_string_constant().is_err());
         // TODO: check Location
         // TODO: check Error type.
 
         // Missing end quote
         let mut p = with_str("\"foo");
-        assert!(p.parse_string_terminal().is_err());
+        assert!(p.parse_string_constant().is_err());
         // TODO: check Location
         // TODO: check Error type.
     }
@@ -237,13 +237,9 @@ mod test {
 
         for test in tests {
             let mut p = with_str(test);
-            let token = p.parse_ident_terminal().unwrap();
-            if let Token::Ident(ident_terminal) = token {
-                assert_eq!(ident_terminal.value, test);
-            // TODO: test span
-            } else {
-                panic!("Wrong token type: {:?}", token);
-            }
+            let (ident, bool_constant) = p.parse_ident_or_bool().unwrap();
+            assert_eq!(ident.unwrap().value, test);
+            assert!(bool_constant.is_none());
         }
     }
 
@@ -253,16 +249,13 @@ mod test {
 
         let mut p = with_str(&tests.join(" "));
         for test in tests {
-            let token = p.parse_ident_terminal().unwrap();
-            if let Token::Ident(ident_terminal) = token {
-                assert_eq!(ident_terminal.value, test);
+            let (ident, bool_constant) = p.parse_ident_or_bool().unwrap();
+            assert_eq!(ident.unwrap().value, test);
+            assert!(bool_constant.is_none());
             // TODO: test span
-            } else {
-                panic!("Wrong token type: {:?}", token);
-            }
 
             // Skip the space.
-            p.sr.eat_char();
+            p.skip_white();
         }
     }
 
@@ -272,7 +265,7 @@ mod test {
 
         for test in tests {
             let mut p = with_str(test);
-            let token = p.parse_ident_terminal();
+            let token = p.parse_ident_or_bool();
             assert!(token.is_err());
         }
     }
@@ -282,13 +275,10 @@ mod test {
         let tests = vec![("true", true), ("false", false)];
         for test in tests {
             let mut p = with_str(test.0);
-            let token = p.parse_ident_terminal().unwrap();
-            if let Token::Bool(bool_terminal) = token {
-                assert_eq!(bool_terminal.value, test.1);
+            let (ident, bool_constant) = p.parse_ident_or_bool().unwrap();
+            assert!(ident.is_none());
+            assert_eq!(bool_constant.unwrap().value, test.1);
             // TODO: test span
-            } else {
-                panic!("Wrong token type: {:?}", token);
-            }
         }
     }
 
@@ -303,13 +293,9 @@ mod test {
         ];
         for test in tests {
             let mut p = with_str(test.0);
-            let token = p.parse_number_terminal().unwrap();
-            if let Token::Number(number_terminal) = token {
-                assert_eq!(number_terminal.value, test.1);
+            let number = p.parse_number_constant().unwrap();
+            assert_eq!(number.value, test.1);
             // TODO: test span
-            } else {
-                panic!("Wrong token type: {:?}", token);
-            }
         }
     }
 
@@ -318,8 +304,8 @@ mod test {
         let tests = vec!["abc", " abc", " 123"];
         for test in tests {
             let mut p = with_str(test);
-            let token = p.parse_number_terminal();
-            assert!(token.is_err())
+            let number = p.parse_number_constant();
+            assert!(number.is_err())
         }
     }
 
