@@ -28,6 +28,29 @@ macro_rules! parse_node_base {
 }
 
 #[derive(Debug)]
+enum ValueTypes {
+    BoolValue(Bool),
+    IdentValue(Ident),
+    NumberValue(NumberConstant),
+    StringValue(StringConstant),
+}
+
+#[derive(Debug)]
+struct Value {
+    value: ValueTypes,
+    span: Span,
+}
+parse_node_base!(Value, ValueTypes);
+
+impl ParseNode for Value {
+    fn in_first_set(ch: char) -> bool {
+        Ident::in_first_set(ch)
+            || NumberConstant::in_first_set(ch)
+            || StringConstant::in_first_set(ch)
+    }
+}
+
+#[derive(Debug)]
 struct Bool {
     value: bool,
     span: Span,
@@ -115,6 +138,55 @@ where
             msg: format!("Expected '{}'.", expected),
             location: self.sr.location(),
         });
+    }
+
+    #[throws]
+    fn parse_value(&mut self) -> Value {
+        let start = self.sr.location();
+        let first = self.sr.peek_char();
+        if let Some(first) = first {
+            if NumberConstant::in_first_set(first) {
+                let number_constant = self.parse_number_constant()?;
+                let end = self.sr.location();
+                Value {
+                    value: ValueTypes::NumberValue(number_constant),
+                    span: Span::new(start, end)?,
+                }
+            } else if Ident::in_first_set(first) {
+                let (ident, bool_constant) = self.parse_ident_or_bool()?;
+                let end = self.sr.location();
+                if let Some(ident) = ident {
+                    Value {
+                        value: ValueTypes::IdentValue(ident),
+                        span: Span::new(start, end)?,
+                    }
+                } else if let Some(bool_constant) = bool_constant {
+                    Value {
+                        value: ValueTypes::BoolValue(bool_constant),
+                        span: Span::new(start, end)?,
+                    }
+                } else {
+                    throw!(Error::IdentFailed { location: start });
+                }
+            } else if StringConstant::in_first_set(first) {
+                let string_constant = self.parse_string_constant()?;
+                let end = self.sr.location();
+                Value {
+                    value: ValueTypes::StringValue(string_constant),
+                    span: Span::new(start, end)?,
+                }
+            } else {
+                throw!(Error::ParseError {
+                    msg: format!("Unexpected character found: {}", first),
+                    location: self.sr.location()
+                });
+            }
+        } else {
+            throw!(Error::ParseError {
+                msg: "Unexpected EOF".to_string(),
+                location: self.sr.location()
+            });
+        }
     }
 
     #[throws]
@@ -356,5 +428,47 @@ mod test {
             p.skip_white();
             assert_eq!(p.sr.peek_char(), test.1);
         }
+    }
+
+    macro_rules! assert_variant {
+        ($v:expr, $var:path, $val:expr) => {
+            if let $var(var) = $v {
+                assert_eq!(*var.value(), $val)
+            } else {
+                panic!("Wrong variant: {:?}", $v);
+            }
+        };
+    }
+
+    #[test]
+    fn test_value_number() {
+        let mut p = with_str("123");
+        let value = p.parse_value().unwrap();
+        assert_variant!(value.value(), ValueTypes::NumberValue, 123_i32);
+    }
+
+    #[test]
+    fn test_value_ident() {
+        let mut p = with_str("foo");
+        let value = p.parse_value().unwrap();
+        assert_variant!(value.value(), ValueTypes::IdentValue, "foo");
+    }
+
+    #[test]
+    fn test_value_string() {
+        let mut p = with_str("\"quux\"");
+        let value = p.parse_value().unwrap();
+        assert_variant!(value.value(), ValueTypes::StringValue, "quux");
+    }
+
+    #[test]
+    fn test_value_bool() {
+        let mut p = with_str("true");
+        let value = p.parse_value().unwrap();
+        assert_variant!(value.value(), ValueTypes::BoolValue, true);
+
+        let mut p = with_str("false");
+        let value = p.parse_value().unwrap();
+        assert_variant!(value.value(), ValueTypes::BoolValue, false);
     }
 }

@@ -6,6 +6,9 @@ use crate::span::Location;
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
+    #[error("Internal Error parsing Ident: no valid Ident variant returned: {location}.")]
+    IdentFailed { location: Location },
+
     #[error("Inverted span, start ({first}) must come before end ({second}).")]
     InvertedSpan { first: Location, second: Location },
 
