@@ -28,6 +28,33 @@ macro_rules! parse_node_base {
 }
 
 #[derive(Debug)]
+struct Arg {
+    value: Value,
+    ident: Option<Ident>,
+    span: Span,
+}
+parse_node_base!(Arg, Value);
+
+impl ParseNode for Arg {
+    fn in_first_set(ch: char) -> bool {
+        Value::in_first_set(ch)
+    }
+}
+
+#[derive(Debug)]
+struct ArgTail {
+    value: Value,
+    span: Span,
+}
+parse_node_base!(ArgTail, Value);
+
+impl ParseNode for ArgTail {
+    fn in_first_set(ch: char) -> bool {
+        ch == '='
+    }
+}
+
+#[derive(Clone, Debug)]
 enum ValueTypes {
     BoolValue(Bool),
     IdentValue(Ident),
@@ -35,7 +62,7 @@ enum ValueTypes {
     StringValue(StringConstant),
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 struct Value {
     value: ValueTypes,
     span: Span,
@@ -50,7 +77,7 @@ impl ParseNode for Value {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 struct Bool {
     value: bool,
     span: Span,
@@ -63,7 +90,7 @@ impl ParseNode for Bool {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 struct Ident {
     value: String,
     span: Span,
@@ -76,7 +103,7 @@ impl ParseNode for Ident {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 struct NumberConstant {
     value: i32,
     span: Span,
@@ -89,7 +116,7 @@ impl ParseNode for NumberConstant {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 struct StringConstant {
     value: String,
     span: Span,
@@ -138,6 +165,64 @@ where
             msg: format!("Expected '{}'.", expected),
             location: self.sr.location(),
         });
+    }
+
+    #[throws]
+    fn parse_arg(&mut self) -> Arg {
+        let start = self.sr.location();
+
+        let ident_or_value = self.parse_value()?;
+        self.skip_white();
+
+        let tail = if let Some(tail_first) = self.sr.peek_char() {
+            if ArgTail::in_first_set(tail_first) {
+                Some(self.parse_arg_tail()?)
+            } else {
+                None
+            }
+        } else {
+            None
+        };
+
+        let (value, ident) = if let Some(tail) = tail {
+            // if we have a tail, then this is a named arg.
+            if let ValueTypes::IdentValue(ident) = ident_or_value.value() {
+                (tail.value().clone(), Some(ident.clone()))
+            } else {
+                throw!(Error::ParseError {
+                    msg: format!("Expected ident, got {:?}", ident_or_value),
+                    location: start,
+                })
+            }
+        } else {
+            // Otherwise, it's a value arg.
+            (ident_or_value, None)
+        };
+
+        let end = self.sr.location();
+        Arg {
+            value: value,
+            ident: ident,
+            span: Span::new(start, end)?,
+        }
+    }
+
+    #[throws]
+    fn parse_arg_tail(&mut self) -> ArgTail {
+        let start = self.sr.location();
+
+        self.expect_char('=')?;
+        self.sr.eat_char(); // Skip the '='.
+
+        self.skip_white();
+
+        let value = self.parse_value()?;
+        let end = self.sr.location();
+
+        ArgTail {
+            value,
+            span: Span::new(start, end)?,
+        }
     }
 
     #[throws]
@@ -470,5 +555,62 @@ mod test {
         let mut p = with_str("false");
         let value = p.parse_value().unwrap();
         assert_variant!(value.value(), ValueTypes::BoolValue, false);
+    }
+
+    #[test]
+    fn test_arg_tail() {
+        let mut p = with_str("=\"foo\"");
+        let tail = p.parse_arg_tail().unwrap();
+        let value = tail.value();
+        if let ValueTypes::StringValue(string_constant) = value.value() {
+            assert_eq!(string_constant.value(), "foo");
+        }
+
+        let mut p = with_str("= 323");
+        let tail = p.parse_arg_tail().unwrap();
+        let value = tail.value();
+        if let ValueTypes::NumberValue(number_constant) = value.value() {
+            assert_eq!(*number_constant.value(), 323);
+        }
+
+        let mut p = with_str("= false");
+        let tail = p.parse_arg_tail().unwrap();
+        let value = tail.value();
+        if let ValueTypes::BoolValue(bool_constant) = value.value() {
+            assert_eq!(*bool_constant.value(), false);
+        }
+    }
+
+    #[test]
+    fn test_arg() {
+        let mut p = with_str("foo");
+        let arg = p.parse_arg().unwrap();
+        assert!(arg.ident.is_none());
+        if let ValueTypes::IdentValue(ident) = arg.value.value() {
+            assert_eq!(ident.value(), "foo");
+        } else {
+            panic!("Unexpected value type: {:?}", arg.value);
+        }
+
+        let mut p = with_str("\"bar\"");
+        let arg = p.parse_arg().unwrap();
+        assert!(arg.ident.is_none());
+        if let ValueTypes::StringValue(string_constant) = arg.value.value() {
+            assert_eq!(string_constant.value(), "bar");
+        } else {
+            panic!("Unexpected value type: {:?}", arg.value);
+        }
+
+        let mut p = with_str("foo = true");
+        let arg = p.parse_arg().unwrap();
+        assert_eq!(arg.ident.unwrap().value(), "foo");
+        if let ValueTypes::BoolValue(b) = arg.value.value() {
+            assert_eq!(*b.value(), true);
+        } else {
+            panic!("Unexpected value type: {:?}", arg.value);
+        }
+
+        // TODO: test spans
+        // TODO: test more errors here, in particular, wrong typed values for name
     }
 }
