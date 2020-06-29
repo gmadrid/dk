@@ -26,4 +26,7 @@ pub enum Error {
         #[from]
         source: std::num::ParseIntError,
     },
+
+    #[error("TODO: flesh out this error type")]
+    WrongValueType,
 }

@@ -28,6 +28,12 @@ macro_rules! parse_node_base {
 }
 
 #[derive(Debug)]
+struct Args {
+    args: Vec<Arg>,
+    span: Span,
+}
+
+#[derive(Debug)]
 struct Arg {
     value: Value,
     ident: Option<Ident>,
@@ -74,6 +80,36 @@ impl ParseNode for Value {
         Ident::in_first_set(ch)
             || NumberConstant::in_first_set(ch)
             || StringConstant::in_first_set(ch)
+    }
+}
+
+impl Value {
+    #[throws]
+    pub fn bool_value(&self) -> &Bool {
+        if let ValueTypes::BoolValue(b) = self.value() {
+            b
+        } else {
+            // TODO: flesh out this error type.
+            throw!(Error::WrongValueType);
+        }
+    }
+
+    #[throws]
+    pub fn ident_value(&self) -> &Ident {
+        if let ValueTypes::IdentValue(ident) = self.value() {
+            ident
+        } else {
+            throw!(Error::WrongValueType);
+        }
+    }
+
+    #[throws]
+    pub fn number_value(&self) -> &NumberConstant {
+        if let ValueTypes::NumberValue(number_constant) = self.value() {
+            number_constant
+        } else {
+            throw!(Error::WrongValueType);
+        }
     }
 }
 
@@ -165,6 +201,36 @@ where
             msg: format!("Expected '{}'.", expected),
             location: self.sr.location(),
         });
+    }
+
+    #[throws]
+    fn parse_args(&mut self) -> Args {
+        let start = self.sr.location();
+
+        let mut args_vec = Vec::new();
+        loop {
+            let arg = self.parse_arg()?;
+            args_vec.push(arg);
+            self.skip_white();
+
+            if let Some(ch) = self.sr.peek_char() {
+                if ch == ',' {
+                    self.sr.eat_char();
+                    self.skip_white();
+                } else {
+                    break;
+                }
+            } else {
+                break;
+            }
+        }
+
+        let end = self.sr.location();
+
+        Args {
+            args: args_vec,
+            span: Span::new(start, end)?,
+        }
     }
 
     #[throws]
@@ -612,5 +678,22 @@ mod test {
 
         // TODO: test spans
         // TODO: test more errors here, in particular, wrong typed values for name
+    }
+
+    #[test]
+    fn test_args() {
+        let mut p = with_str("a, b , c = 3");
+        let args = p.parse_args().unwrap();
+        assert_eq!(args.args.len(), 3);
+        assert_eq!(args.args[0].value.ident_value().unwrap().value(), "a");
+        assert_eq!(args.args[1].value.ident_value().unwrap().value(), "b");
+        assert_eq!(args.args[2].ident.as_ref().unwrap().value(), "c");
+        assert_eq!(*args.args[2].value.number_value().unwrap().value(), 3_i32);
+
+        // TODO: test spans
+        // TODO: test positional args after named args
+        // TODO: test repeated named args
+        // TODO: test named args for already bound positional args
+        // TODO: replace pattern matches with calls to Value accessors: ident_value, number_value().
     }
 }
