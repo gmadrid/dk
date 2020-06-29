@@ -1,3 +1,4 @@
+use crate::parser::ValueTypes::StringValue;
 use crate::span::{Location, Span};
 use crate::spanning_reader::{SpanningRead, SpanningReader};
 use crate::Error;
@@ -9,8 +10,17 @@ trait ParseNodeBase {
     fn value(&self) -> &Self::ValueType;
 }
 
-trait ParseNode: ParseNodeBase {
+trait First {
+    // A test to see if this ParseNode can start with the provided character.
+    // NOTE: _must_ be equivalent to first_set().contains(ch), but the implementation is not
+    //       constrained to this. There may be faster calls like `ch.is_ascii_alpha()`.
     fn in_first_set(ch: char) -> bool;
+
+    // A list of all chars that this ParseNode can begin with.
+    // This should be mostly used for error reporting.
+    // NOTE: call `in_first_set()` instead of this, if possible. This func may allocate a new Vec,
+    // and `in_first_set()` may be faster than a linear search in this vector.
+    fn first_set() -> Vec<char>;
 }
 
 macro_rules! parse_node_base {
@@ -41,9 +51,13 @@ struct Arg {
 }
 parse_node_base!(Arg, Value);
 
-impl ParseNode for Arg {
+impl First for Arg {
     fn in_first_set(ch: char) -> bool {
         Value::in_first_set(ch)
+    }
+
+    fn first_set() -> Vec<char> {
+        Value::first_set()
     }
 }
 
@@ -54,9 +68,13 @@ struct ArgTail {
 }
 parse_node_base!(ArgTail, Value);
 
-impl ParseNode for ArgTail {
+impl First for ArgTail {
     fn in_first_set(ch: char) -> bool {
         ch == '='
+    }
+
+    fn first_set() -> Vec<char> {
+        vec!['=']
     }
 }
 
@@ -75,11 +93,18 @@ struct Value {
 }
 parse_node_base!(Value, ValueTypes);
 
-impl ParseNode for Value {
+impl First for Value {
     fn in_first_set(ch: char) -> bool {
         Ident::in_first_set(ch)
             || NumberConstant::in_first_set(ch)
             || StringConstant::in_first_set(ch)
+    }
+
+    fn first_set() -> Vec<char> {
+        let mut set = Ident::first_set();
+        set.append(&mut NumberConstant::first_set());
+        set.append(&mut StringConstant::first_set());
+        set
     }
 }
 
@@ -120,9 +145,13 @@ struct Bool {
 }
 parse_node_base!(Bool, bool);
 
-impl ParseNode for Bool {
+impl First for Bool {
     fn in_first_set(ch: char) -> bool {
         ch == 't' || ch == 'f'
+    }
+
+    fn first_set() -> Vec<char> {
+        "tf".chars().collect()
     }
 }
 
@@ -133,9 +162,15 @@ struct Ident {
 }
 parse_node_base!(Ident, String);
 
-impl ParseNode for Ident {
+impl First for Ident {
     fn in_first_set(ch: char) -> bool {
         ch == '_' || ch.is_ascii_alphabetic()
+    }
+
+    fn first_set() -> Vec<char> {
+        "_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+            .chars()
+            .collect()
     }
 }
 
@@ -146,9 +181,15 @@ struct NumberConstant {
 }
 parse_node_base!(NumberConstant, i32);
 
-impl ParseNode for NumberConstant {
+// TODO: find a way to compare the results of in_first_set and first_set.
+
+impl First for NumberConstant {
     fn in_first_set(ch: char) -> bool {
         ch == '-' || ch.is_ascii_digit()
+    }
+
+    fn first_set() -> Vec<char> {
+        "-0123456789".chars().collect()
     }
 }
 
@@ -159,9 +200,13 @@ struct StringConstant {
 }
 parse_node_base!(StringConstant, String);
 
-impl ParseNode for StringConstant {
+impl First for StringConstant {
     fn in_first_set(ch: char) -> bool {
         ch == '"'
+    }
+
+    fn first_set() -> Vec<char> {
+        vec!['"']
     }
 }
 
