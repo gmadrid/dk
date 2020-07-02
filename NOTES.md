@@ -27,6 +27,7 @@ Terminals:
   RPAREN
   COMMA
   
+```  
 Non-terminals
   program = stmts
   stmts = stmt stmts
@@ -45,5 +46,5 @@ Non-terminals
         = number
         = string
         = bool
-      
+```
   

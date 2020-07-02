@@ -3,9 +3,7 @@
 
 use crate::span::Location;
 use crate::Error;
-use assure::assure;
-use fehler::{throw, throws};
-use std::io::BufRead;
+use fehler::{throws};
 
 pub trait SpanningRead {
     /// Returns the current location in the stream.
@@ -46,7 +44,7 @@ impl SpanningReader {
     pub fn new<R: std::io::Read>(mut rdr: R) -> SpanningReader {
         let mut input_string = String::new();
         // TODO: get rid of unwrap!!!!!
-        let bytes_read = rdr.read_to_string(&mut input_string)?;
+        let _ = rdr.read_to_string(&mut input_string)?;
 
         // It's bad enough that we read in the entire file contents, but
         // now, we're basically doubling the size by collecting the chars.

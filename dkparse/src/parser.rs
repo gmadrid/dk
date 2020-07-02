@@ -1,13 +1,35 @@
-use crate::parser::ValueTypes::StringValue;
-use crate::span::{Location, Span};
-use crate::spanning_reader::{SpanningRead, SpanningReader};
+use crate::span::{Span};
+use crate::spanning_reader::{SpanningRead};
 use crate::Error;
 use fehler::{throw, throws};
 
 trait ParseNodeBase {
     type ValueType;
-    fn span(&self) -> &Span;
     fn value(&self) -> &Self::ValueType;
+}
+
+macro_rules! parse_node_base {
+    ( $pnb:ty, $vt:ty ) => {
+        impl ParseNodeBase for $pnb {
+            type ValueType = $vt;
+            fn value(&self) -> &Self::ValueType {
+                &self.value
+            }
+        }
+    };
+}
+
+trait ParseNode {
+    fn span(&self) -> &Span;
+}
+macro_rules! parse_node {
+    ( $hs:ty ) => {
+        impl ParseNode for $hs {
+            fn span(&self) -> &Span {
+                &self.span
+            }
+        }
+    }
 }
 
 trait First {
@@ -23,18 +45,21 @@ trait First {
     fn first_set() -> Vec<char>;
 }
 
-macro_rules! parse_node_base {
-    ( $pnb:ty, $vt:ty ) => {
-        impl ParseNodeBase for $pnb {
-            type ValueType = $vt;
-            fn span(&self) -> &Span {
-                &self.span
-            }
-            fn value(&self) -> &Self::ValueType {
-                &self.value
-            }
-        }
-    };
+#[derive(Debug)]
+struct Variable {
+    ident: Ident,
+    span: Span,
+}
+parse_node!(Variable);
+
+impl First for Variable {
+    fn in_first_set(ch: char) -> bool {
+        Ident::in_first_set(ch)
+    }
+
+    fn first_set() -> Vec<char> {
+        Ident::first_set()
+    }
 }
 
 #[derive(Debug)]
@@ -246,6 +271,23 @@ where
             msg: format!("Expected '{}'.", expected),
             location: self.sr.location(),
         });
+    }
+
+    #[throws]
+    fn parse_variable(&mut self) -> Variable {
+        let start = self.sr.location();
+
+        // TODO: better error message when using reserved word?
+        let (ident, _) = self.parse_ident_or_bool()?;
+        let end = self.sr.location();
+        if let Some(ident) = ident {
+            Variable { ident: ident, span: Span::new(start, end)? }
+        } else {
+            throw!(Error::ParseError {
+                msg: "Expected ident for variable. Probably got a reserved word.".to_string(),
+                location: start,
+            });
+        }
     }
 
     #[throws]
@@ -498,6 +540,7 @@ where
 #[cfg(test)]
 mod test {
     use super::*;
+    use crate::spanning_reader::SpanningReader;
 
     fn with_str(s: &str) -> Parser<SpanningReader> {
         let sr = SpanningReader::new(s.as_bytes()).unwrap();
@@ -740,5 +783,14 @@ mod test {
         // TODO: test repeated named args
         // TODO: test named args for already bound positional args
         // TODO: replace pattern matches with calls to Value accessors: ident_value, number_value().
+    }
+
+    #[test]
+    fn test_variable() {
+        let mut p = with_str("foobar");
+        let variable = p.parse_variable().unwrap();
+        assert_eq!(*variable.ident.value(), "foobar")
+
+        // TODO: test spans
     }
 }
