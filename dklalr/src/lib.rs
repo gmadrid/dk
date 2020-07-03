@@ -4,6 +4,16 @@ lalrpop_mod!(pub parser);
 
 mod ast;
 
+pub fn run_file() {
+    let thing = r#"
+    chart = read("foobar.knit")
+    padded = pad(chart, 5)
+    write(padded)
+    "#;
+    let ast = parser::ProgramParser::new().parse(thing).unwrap();
+    println!("THE THING: {:?}", ast);
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -17,6 +27,49 @@ mod tests {
                 panic!("Unexpected variant found")
             }
         };
+    }
+
+    #[test]
+    fn test_call() {
+        let p = parser::CallParser::new();
+
+        let call = p.parse(r#"read(true)"#).unwrap();
+
+        let call = p.parse(r#"read("foobar.knit")"#).unwrap();
+
+        let callstr = p.parse(r#"read("bam")"#).unwrap();
+    }
+
+    #[test]
+    fn test_calltail() {
+        let p= parser::CallTailParser::new();
+
+        let tail = p.parse("(345, 456, 567)").unwrap();
+
+        let mixed = p.parse(r#"("foobar", 345, true)"#).unwrap();
+    }
+
+    #[test]
+    fn test_args() {
+        let p = parser::ArgsParser::new();
+
+        let pos = p.parse("345, 456, 789").unwrap();
+// TODO: test this.
+        let mixed = p.parse("foo=true, bar=456, bam=quux").unwrap();
+
+        let quoted = p.parse(r#""quoted", 345, true"#).unwrap();
+    }
+
+    #[test]
+    fn test_arg() {
+        let p = parser::ArgParser::new();
+
+        let pos = p.parse("345").unwrap();
+        // TODO: actually write these tests.
+
+        let named = p.parse("foo=345").unwrap();
+
+        let str = p.parse(r#""quoted""#).unwrap();
     }
 
     #[test]

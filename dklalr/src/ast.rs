@@ -32,6 +32,7 @@ impl Checkable for String {
     }
 }
 
+#[derive(Debug)]
 pub struct ProgramNode(pub Vec<StmtNode>);
 impl Checkable for ProgramNode {
     fn check(&self) {
@@ -41,8 +42,10 @@ impl Checkable for ProgramNode {
     }
 }
 
+#[derive(Debug)]
 pub struct StmtsNode(pub Vec<StmtNode>);
 
+#[derive(Debug)]
 pub enum StmtNode {
     Assign(String, CallNode),
     Call(CallNode),
@@ -60,11 +63,13 @@ impl Checkable for StmtNode {
     }
 }
 
+#[derive(Debug)]
 pub enum StmtTailNode {
     Assign(CallNode),
     Call(ArgsNode),
 }
 
+#[derive(Debug)]
 pub struct CallNode(pub String, pub ArgsNode);
 
 impl Checkable for CallNode {
@@ -74,8 +79,10 @@ impl Checkable for CallNode {
     }
 }
 
+#[derive(Debug)]
 pub struct CallTailNode(pub ArgsNode);
 
+#[derive(Debug)]
 pub struct ArgsNode(pub Vec<ArgNode>);
 
 impl Checkable for ArgsNode {
@@ -90,6 +97,7 @@ impl Checkable for ArgsNode {
 
 // 0 = the value to pass as the parameter
 // 1 = if is_some(), then it's a named parameter
+#[derive(Debug)]
 pub struct ArgNode(pub ValueNode, pub Option<String>);
 
 impl Checkable for ArgNode {
@@ -99,8 +107,10 @@ impl Checkable for ArgNode {
     }
 }
 
+#[derive(Debug)]
 pub struct ArgTailNode(pub Option<ValueNode>);
 
+#[derive(Debug)]
 pub enum ValueNode {
     Ident(String),
     Number(i32),
@@ -116,4 +126,5 @@ impl Checkable for ValueNode {
 
 // TODO: is it better to add an Ident node?
 
+#[derive(Debug)]
 pub struct BoolNode(pub bool);

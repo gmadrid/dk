@@ -91,7 +91,7 @@ match {
     "=" => EQ,
     "(" => LPAREN,
     ")" => RPAREN,
-    r#""\w*""# => STRING,
+    r#""[^"]*""# => STRING,
     r"[_a-zA-Z][_a-zA-Z0-9]*" => IDENT,  // TODO: make this better.
     r"-?\d+" => NUMBER,
     "true" => TRUE,

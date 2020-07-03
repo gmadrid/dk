@@ -4,6 +4,10 @@ version = "0.1.0"
 authors = ["George Madrid <gmadrid@gmail.com>"]
 edition = "2018"
 
+[lib]
+name = "dklalr"
+
+
 [build-dependencies]
 lalrpop = { version = "0.19", features = ["lexer"] }
 
