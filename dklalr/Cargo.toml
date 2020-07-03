@@ -1,0 +1,12 @@
+[package]
+name = "dklalr"
+version = "0.1.0"
+authors = ["George Madrid <gmadrid@gmail.com>"]
+edition = "2018"
+
+[build-dependencies]
+lalrpop = { version = "0.19", features = ["lexer"] }
+
+[dependencies]
+lalrpop-util = "0.19"
+regex = "1.3"

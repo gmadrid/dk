@@ -2,6 +2,7 @@
 
 members = [
     "dkbin",
+    "dklalr",
     "dklib",
     "dkparse"
 ]
