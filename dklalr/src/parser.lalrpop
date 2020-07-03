@@ -52,10 +52,10 @@ pub Args: ArgsNode = {
 }
 
 pub Arg: ArgNode = {
-    <v:Value> <a:ArgTail> => {
-        if a.0.is_some() {
+    <v:Value> <tail:ArgTail> => {
+        if tail.0.is_some() {
             if let ValueNode::Ident(id) = v {
-                ArgNode(a.0.unwrap(), Some(id))
+                ArgNode(tail.0.unwrap(), Some(id))
             } else {
                 panic!("Expected IDENT for name of argument.")
             }
