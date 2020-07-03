@@ -1,4 +1,3 @@
-use std::str::FromStr;
 use crate::ast::{ArgsNode, ArgNode, ArgTailNode, BoolNode, CallNode,
                  CallTailNode, ProgramNode,
                  StmtNode, StmtsNode, StmtTailNode, ValueNode};
@@ -20,7 +19,7 @@ pub Stmts : StmtsNode = {
         m_ss.0.push(s);
         m_ss
     },
-    => { StmtsNode(Vec::new()) }
+    => StmtsNode(Vec::new())
 }
 
 pub Stmt : StmtNode = {
@@ -44,7 +43,7 @@ pub Call : CallNode = {
 }
 
 pub CallTail : CallTailNode = {
-    LPAREN <Args> RPAREN => CallTailNode(<>.0)
+    LPAREN <Args> RPAREN => CallTailNode(<>)
 }
 
 pub Args: ArgsNode = {

@@ -13,8 +13,10 @@ mod tests {
         ($parser:expr, $variant:path, $value:expr, $expected:expr) => {
             if let $variant(actual) = $parser.parse($value).unwrap() {
                 assert_eq!(actual, $expected);
-            } else { panic!("Unexpected variant found") }
-        }
+            } else {
+                panic!("Unexpected variant found")
+            }
+        };
     }
 
     #[test]
@@ -82,5 +84,5 @@ mod tests {
         assert_eq!(value, false);
 
         assert!(parser.parse("True").is_err());
-     }
+    }
 }
