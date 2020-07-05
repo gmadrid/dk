@@ -3,6 +3,7 @@ use lalrpop_util::lalrpop_mod;
 lalrpop_mod!(pub parser);
 
 mod ast;
+mod lexer;
 
 pub fn run_file() {
     let thing = r#"
