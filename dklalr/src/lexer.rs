@@ -146,12 +146,16 @@ impl<'input> Iterator for Lexer<'input> {
 
                 Some((i, '"')) => return Some(self.string()),
 
-                Some((i, ch)) if ch.is_whitespace() => { self.chars.next(); },
+                Some((i, ch)) if ch.is_whitespace() => {
+                    self.chars.next();
+                }
                 Some((i, ch)) if ch.is_ascii_digit() || *ch == '-' => return Some(self.number()),
                 Some((i, ch)) if ch.is_alphabetic() || *ch == '_' => return Some(self.ident()),
 
                 None => return None,
-                _ => { panic!("unexpected input"); }
+                _ => {
+                    panic!("unexpected input");
+                }
             }
         }
     }
@@ -254,13 +258,34 @@ mod test {
         let strings = r#""" "foo" "bar" "  " "" "close""strings""#;
         let mut lexer = Lexer::new(strings);
 
-        assert_eq!(lexer.next().unwrap().unwrap(), (0_usize, Token::String("".into()), 2_usize));
-        assert_eq!(lexer.next().unwrap().unwrap(), (3_usize, Token::String("foo".into()), 8_usize));
-        assert_eq!(lexer.next().unwrap().unwrap(), (9_usize, Token::String("bar".into()), 14_usize));
-        assert_eq!(lexer.next().unwrap().unwrap(), (15_usize, Token::String("  ".into()), 19_usize));
-        assert_eq!(lexer.next().unwrap().unwrap(), (20_usize, Token::String("".into()), 22_usize));
-        assert_eq!(lexer.next().unwrap().unwrap(), (23_usize, Token::String("close".into()), 30_usize));
-        assert_eq!(lexer.next().unwrap().unwrap(), (30_usize, Token::String("strings".into()), 39_usize));
+        assert_eq!(
+            lexer.next().unwrap().unwrap(),
+            (0_usize, Token::String("".into()), 2_usize)
+        );
+        assert_eq!(
+            lexer.next().unwrap().unwrap(),
+            (3_usize, Token::String("foo".into()), 8_usize)
+        );
+        assert_eq!(
+            lexer.next().unwrap().unwrap(),
+            (9_usize, Token::String("bar".into()), 14_usize)
+        );
+        assert_eq!(
+            lexer.next().unwrap().unwrap(),
+            (15_usize, Token::String("  ".into()), 19_usize)
+        );
+        assert_eq!(
+            lexer.next().unwrap().unwrap(),
+            (20_usize, Token::String("".into()), 22_usize)
+        );
+        assert_eq!(
+            lexer.next().unwrap().unwrap(),
+            (23_usize, Token::String("close".into()), 30_usize)
+        );
+        assert_eq!(
+            lexer.next().unwrap().unwrap(),
+            (30_usize, Token::String("strings".into()), 39_usize)
+        );
         assert!(lexer.next().is_none());
     }
 
@@ -269,13 +294,34 @@ mod test {
         let idents = "id _id Id ID _2id ____ _22_";
         let mut lexer = Lexer::new(idents);
 
-        assert_eq!(lexer.next().unwrap().unwrap(), (0_usize, Token::Ident("id".to_string()), 2_usize));
-        assert_eq!(lexer.next().unwrap().unwrap(), (3_usize, Token::Ident("_id".to_string()), 6_usize));
-        assert_eq!(lexer.next().unwrap().unwrap(), (7_usize, Token::Ident("Id".to_string()), 9_usize));
-        assert_eq!(lexer.next().unwrap().unwrap(), (10_usize, Token::Ident("ID".to_string()), 12_usize));
-        assert_eq!(lexer.next().unwrap().unwrap(), (13_usize, Token::Ident("_2id".to_string()), 17_usize));
-        assert_eq!(lexer.next().unwrap().unwrap(), (18_usize, Token::Ident("____".to_string()), 22_usize));
-        assert_eq!(lexer.next().unwrap().unwrap(), (23_usize, Token::Ident("_22_".to_string()), 27_usize));
+        assert_eq!(
+            lexer.next().unwrap().unwrap(),
+            (0_usize, Token::Ident("id".to_string()), 2_usize)
+        );
+        assert_eq!(
+            lexer.next().unwrap().unwrap(),
+            (3_usize, Token::Ident("_id".to_string()), 6_usize)
+        );
+        assert_eq!(
+            lexer.next().unwrap().unwrap(),
+            (7_usize, Token::Ident("Id".to_string()), 9_usize)
+        );
+        assert_eq!(
+            lexer.next().unwrap().unwrap(),
+            (10_usize, Token::Ident("ID".to_string()), 12_usize)
+        );
+        assert_eq!(
+            lexer.next().unwrap().unwrap(),
+            (13_usize, Token::Ident("_2id".to_string()), 17_usize)
+        );
+        assert_eq!(
+            lexer.next().unwrap().unwrap(),
+            (18_usize, Token::Ident("____".to_string()), 22_usize)
+        );
+        assert_eq!(
+            lexer.next().unwrap().unwrap(),
+            (23_usize, Token::Ident("_22_".to_string()), 27_usize)
+        );
         assert!(lexer.next().is_none());
     }
 
@@ -284,7 +330,13 @@ mod test {
         let specials = "true false";
         let mut lexer = Lexer::new(specials);
 
-        assert_eq!(lexer.next().unwrap().unwrap(), (0_usize, Token::True, 4_usize));
-        assert_eq!(lexer.next().unwrap().unwrap(), (5_usize, Token::False, 10_usize));
+        assert_eq!(
+            lexer.next().unwrap().unwrap(),
+            (0_usize, Token::True, 4_usize)
+        );
+        assert_eq!(
+            lexer.next().unwrap().unwrap(),
+            (5_usize, Token::False, 10_usize)
+        );
     }
 }

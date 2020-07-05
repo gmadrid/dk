@@ -43,7 +43,7 @@ mod tests {
 
     #[test]
     fn test_calltail() {
-        let p= parser::CallTailParser::new();
+        let p = parser::CallTailParser::new();
 
         let tail = p.parse("(345, 456, 567)").unwrap();
 
@@ -55,7 +55,7 @@ mod tests {
         let p = parser::ArgsParser::new();
 
         let pos = p.parse("345, 456, 789").unwrap();
-// TODO: test this.
+        // TODO: test this.
         let mixed = p.parse("foo=true, bar=456, bam=quux").unwrap();
 
         let quoted = p.parse(r#""quoted", 345, true"#).unwrap();
