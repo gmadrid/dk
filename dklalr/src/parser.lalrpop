@@ -1,6 +1,7 @@
 use crate::ast::{ArgsNode, ArgNode, ArgTailNode, BoolNode, CallNode,
                  CallTailNode, ProgramNode,
                  StmtNode, StmtsNode, StmtTailNode, ValueNode};
+use crate::lexer;
 
 grammar;
 
@@ -25,8 +26,8 @@ pub Stmts : StmtsNode = {
 pub Stmt : StmtNode = {
     <id:IDENT> <tail:StmtTail> => {
         match tail {
-            StmtTailNode::Assign(cn) => StmtNode::Assign(id.to_string(), cn),
-            StmtTailNode::Call(args) => StmtNode::Call(CallNode(id.to_string(), args)),
+            StmtTailNode::Assign(cn) => StmtNode::Assign(id, cn),
+            StmtTailNode::Call(args) => StmtNode::Call(CallNode(id, args)),
         }
     }
 }
@@ -72,12 +73,8 @@ pub ArgTail: ArgTailNode = {
 
 pub Value: ValueNode = {
     IDENT => ValueNode::Ident(<>.to_string()),
-    NUMBER => ValueNode::Number(<>.parse::<i32>().unwrap()), // TODO FIX THIS
-    STRING => {
-        let with_quotes = <>;
-        let len = with_quotes.len();
-        ValueNode::String(with_quotes[1..(len - 1)].to_string())
-    },
+    NUMBER => ValueNode::Number(<>),
+    STRING => ValueNode::String(<>),
     Bool => ValueNode::Bool(<>.0),
 }
 
@@ -86,14 +83,19 @@ pub Bool: BoolNode = {
     FALSE => BoolNode(false),
 }
 
-match {
-    "," => COMMA,
-    "=" => EQ,
-    "(" => LPAREN,
-    ")" => RPAREN,
-    r#""[^"]*""# => STRING,
-    r"[_a-zA-Z][_a-zA-Z0-9]*" => IDENT,  // TODO: make this better.
-    r"-?\d+" => NUMBER,
-    "true" => TRUE,
-    "false" => FALSE,
+extern {
+    type Location = usize;
+    type Error = lexer::LexicalError;
+
+    enum lexer::Token {
+        COMMA => lexer::Token::Comma,
+        EQ => lexer::Token::Eq,
+        FALSE => lexer::Token::False,
+        IDENT => lexer::Token::Ident(<String>),
+        LPAREN => lexer::Token::LParen,
+        NUMBER => lexer::Token::Number(<i32>),
+        RPAREN => lexer::Token::RParen,
+        STRING => lexer::Token::String(<String>),
+        TRUE => lexer::Token::True,
+    }
 }

@@ -11,7 +11,8 @@ pub fn run_file() {
     padded = pad(chart, 5)
     write(padded)
     "#;
-    let ast = parser::ProgramParser::new().parse(thing).unwrap();
+    let lexer = lexer::Lexer::new(thing);
+    let ast = parser::ProgramParser::new().parse(lexer).unwrap();
     println!("THE THING: {:?}", ast);
 }
 
@@ -19,10 +20,11 @@ pub fn run_file() {
 mod tests {
     use super::*;
     use crate::ast::*;
+    use crate::lexer::Lexer;
 
     macro_rules! test_value_variant {
         ($parser:expr, $variant:path, $value:expr, $expected:expr) => {
-            if let $variant(actual) = $parser.parse($value).unwrap() {
+            if let $variant(actual) = $parser.parse(lex($value)).unwrap() {
                 assert_eq!(actual, $expected);
             } else {
                 panic!("Unexpected variant found")
@@ -30,57 +32,61 @@ mod tests {
         };
     }
 
+    fn lex(str: &str) -> Lexer {
+        Lexer::new(str)
+    }
+
     #[test]
     fn test_call() {
         let p = parser::CallParser::new();
 
-        let call = p.parse(r#"read(true)"#).unwrap();
+        let call = p.parse(lex(r#"read(true)"#)).unwrap();
 
-        let call = p.parse(r#"read("foobar.knit")"#).unwrap();
+        let call = p.parse(lex(r#"read("foobar.knit")"#)).unwrap();
 
-        let callstr = p.parse(r#"read("bam")"#).unwrap();
+        let callstr = p.parse(lex(r#"read("bam")"#)).unwrap();
     }
 
     #[test]
     fn test_calltail() {
         let p = parser::CallTailParser::new();
 
-        let tail = p.parse("(345, 456, 567)").unwrap();
+        let tail = p.parse(lex("(345, 456, 567)")).unwrap();
 
-        let mixed = p.parse(r#"("foobar", 345, true)"#).unwrap();
+        let mixed = p.parse(lex(r#"("foobar", 345, true)"#)).unwrap();
     }
 
     #[test]
     fn test_args() {
         let p = parser::ArgsParser::new();
 
-        let pos = p.parse("345, 456, 789").unwrap();
+        let pos = p.parse(lex("345, 456, 789")).unwrap();
         // TODO: test this.
-        let mixed = p.parse("foo=true, bar=456, bam=quux").unwrap();
+        let mixed = p.parse(lex("foo=true, bar=456, bam=quux")).unwrap();
 
-        let quoted = p.parse(r#""quoted", 345, true"#).unwrap();
+        let quoted = p.parse(lex(r#""quoted", 345, true"#)).unwrap();
     }
 
     #[test]
     fn test_arg() {
         let p = parser::ArgParser::new();
 
-        let pos = p.parse("345").unwrap();
+        let pos = p.parse(lex("345")).unwrap();
         // TODO: actually write these tests.
 
-        let named = p.parse("foo=345").unwrap();
+        let named = p.parse(lex("foo=345")).unwrap();
 
-        let str = p.parse(r#""quoted""#).unwrap();
+        let str = p.parse(lex(r#""quoted""#)).unwrap();
     }
 
     #[test]
     fn test_arg_tail() {
         let p = parser::ArgTailParser::new();
 
-        let n = p.parse("= foo").unwrap();
+        let n = p.parse(lex("= foo")).unwrap();
         assert!(n.0.is_some());
 
-        let n = p.parse("").unwrap();
+        let n = p.parse(lex("")).unwrap();
         assert!(n.0.is_none());
     }
 
@@ -96,7 +102,7 @@ mod tests {
         test_value_variant!(parser, ValueNode::Ident, "AnIdent", "AnIdent");
         test_value_variant!(parser, ValueNode::Ident, "IDENT", "IDENT");
 
-        assert!(parser.parse("1ident").is_err());
+        assert!(parser.parse(lex("1ident")).is_err());
     }
 
     #[test]
@@ -131,12 +137,12 @@ mod tests {
     fn test_bool() {
         let parser = parser::BoolParser::new();
 
-        let BoolNode(value) = parser.parse("true").unwrap();
+        let BoolNode(value) = parser.parse(lex("true")).unwrap();
         assert_eq!(value, true);
 
-        let BoolNode(value) = parser.parse("false").unwrap();
+        let BoolNode(value) = parser.parse(lex("false")).unwrap();
         assert_eq!(value, false);
 
-        assert!(parser.parse("True").is_err());
+        assert!(parser.parse(lex("True")).is_err());
     }
 }
