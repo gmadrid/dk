@@ -12,5 +12,7 @@ name = "dklalr"
 lalrpop = { version = "0.19", features = ["lexer"] }
 
 [dependencies]
+fehler = { git = "https://github.com/gmadrid/fehler.git", version = "1.0.0" }
 lalrpop-util = "0.19"
 regex = "1.3"
+lazy_static = "1.4.0"

@@ -3,17 +3,13 @@ use lalrpop_util::lalrpop_mod;
 lalrpop_mod!(pub parser);
 
 mod ast;
+mod builtins;
 mod lexer;
 
-pub fn run_file() {
-    let thing = r#"
-    chart = read("foobar.knit")
-    padded = pad(chart, 5)
-    write(padded)
-    "#;
-    let lexer = lexer::Lexer::new(thing);
-    let ast = parser::ProgramParser::new().parse(lexer).unwrap();
-    println!("THE THING: {:?}", ast);
+pub fn parse_str(input: &str) -> ast::ProgramNode {
+    let lexer = lexer::Lexer::new(input);
+    // TODO: yeah this sucks.
+    parser::ProgramParser::new().parse(lexer).unwrap()
 }
 
 #[cfg(test)]
