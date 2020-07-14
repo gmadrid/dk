@@ -2,10 +2,11 @@
 #[macro_use]
 mod test;
 
-pub mod chart;
+mod chart;
 mod thing;
 mod units;
 
+pub use chart::Chart;
 pub use thing::the_thing;
 
 #[derive(thiserror::Error, Debug)]

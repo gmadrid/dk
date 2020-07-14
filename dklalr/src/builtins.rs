@@ -17,13 +17,15 @@
 
 */
 
-use fehler::throws;
+use assure::assure;
+use crate::ast::ArgNode;
+use crate::context::{Context, Value};
+use crate::Error;
+use dklib::Chart;
+use fehler::{throw,throws};
 use lazy_static::lazy_static;
 use std::collections::{HashMap, HashSet};
 use std::fmt::Formatter;
-
-// TODO: you need errors!
-type Error = ();
 
 #[derive(Debug)]
 pub enum ParamValue {
@@ -45,9 +47,9 @@ pub struct ParamDesc {
 }
 
 pub struct Builtin {
-    name: &'static str,
-    params: Vec<ParamDesc>,
-    func: fn(&str) -> String,
+    pub name: &'static str,
+    pub params: Vec<ParamDesc>,
+    pub func: fn(&HashMap<&str, Value>) -> std::result::Result<Value, Error>,
 }
 
 impl std::fmt::Debug for Builtin {
@@ -127,53 +129,153 @@ macro_rules! builtin {
     }
 }
 
-fn foobar(s: &str) -> String {
-    todo!("write a wrapper func, silly: {}", s)
-}
-
 lazy_static! {
     pub static ref BUILTINS: HashMap<&'static str, Builtin> = {
         let mut builtins = HashMap::default();
 
-        builtin!(builtins, "pad", foobar, [
-            param!("chart", ParamType::Chart),
-            param!("pad_size", ParamType::Number, ParamValue::Number(1))
-        ]);
+        builtin!(
+            builtins,
+            "pad",
+            wrap_pad,
+            [
+                param!("chart", ParamType::Chart),
+                param!("pad_size", ParamType::Number, ParamValue::Number(1))
+            ]
+        );
 
         builtin!(
             builtins,
             "read",
-            foobar,
+            wrap_read,
             [param!("filename", ParamType::String)]
         );
 
-        builtin!(builtins, "write", foobar, [
-            param!("filename", ParamType::String),
-            param!("chart", ParamType::Chart)
-        ]);
+        builtin!(
+            builtins,
+            "write",
+            wrap_write,
+            [
+                param!("chart", ParamType::Chart),
+                param!("filename", ParamType::String)
+            ]
+        );
 
         builtins
     };
 }
 
-struct Context {
+#[throws]
+fn wrap_pad(param_values: &HashMap<&str, Value>) -> Value {
+    // TODO: add all of the arguments.
+    let chart = param_values.get("chart").unwrap().as_chart()?;
+    let padded = chart.pad('.')?;
 
-}
+    println!("PADDED:\n{}", padded.write_to_string()?);
 
-impl Context {
-
+    Value::Chart(padded)
 }
 
 #[throws]
-fn eval_builtin(builtin: &Builtin, context: Context) {
-    /*
+fn wrap_read(param_values: &HashMap<&str, Value>) -> Value {
+    // TODO: unwrap
+    let filename = param_values.get("filename").unwrap().as_string()?;
+    println!("read({:?})", filename);
 
-     */
+    let chart = Chart::read_from_file(filename)?;
+
+    println!("READ: \n{}", chart.write_to_string()?);
+
+    Value::Chart(chart)
+}
+
+#[throws]
+fn wrap_write(param_values: &HashMap<&str, Value>) -> Value {
+    let filename = param_values.get("filename").unwrap().as_string()?;
+    let chart = param_values.get("chart").unwrap().as_chart()?;
+
+    chart.write_to_file(&filename)?;
+    println!("WROTE TO {}", filename);
+
+    Value::NullValue
+}
+
+struct Invocation<'a> {
+    context: &'a Context,
+    builtin: &'a Builtin,
+    param_values: HashMap<&'a str, Value>
+}
+
+impl<'a> Invocation<'a> {
+    fn new(context: &'a Context, builtin: &'a Builtin) -> Invocation<'a> {
+        Invocation { context, builtin, param_values: Default::default() }
+    }
+
+    #[throws]
+    fn assign_positional_param(&mut self, builtin: &Builtin, i: usize, arg: &ArgNode) {
+        println!("assign_positional_param: {} {:?}", i, arg.0);
+        assure!(i < builtin.params.len(),
+            Error::TooManyArguments(builtin.name, builtin.params.len(), i));
+        let param_desc = &builtin.params[i];
+        self.param_values.insert(param_desc.param_name, Value::from_arg(arg, self.context)?);
+    }
+
+    #[throws]
+    fn assign_named_param(&mut self, builtin: &Builtin, arg: &ArgNode) {
+        if let ArgNode(value, Some(name)) = arg {
+            let param = builtin.params.iter().find(|p| p.param_name == name);
+            if let Some(param_desc) = param {
+                self.param_values.insert(param_desc.param_name, Value::from_arg(arg, self.context)?);
+            } else {
+                throw!(Error::UnknownParam(builtin.name, name.clone()));
+            }
+        }
+    }
+
+    #[throws]
+    fn check_params(&self) {
+        println!("check_params: ");
+        for param_value in &self.param_values {
+            println!("\t{}, {:?}", param_value.0, param_value.1);
+        }
+    }
+
+    #[throws]
+    fn invoke(&self) -> Value {
+        self.check_params()?;
+
+        let value = (self.builtin.func)(&self.param_values)?;
+
+        value
+    }
+}
+
+#[throws]
+pub fn call(name: &str, args: Vec<ArgNode>, context: &Context) -> Value {
+    println!("calling: {}", name);
+    let builtin = BUILTINS.get(name);
+    if let Some(builtin) = builtin {
+        let mut invocation = Invocation::new(context, builtin);
+        let (positional, named): (Vec<_>, Vec<_>) = args.iter().partition(|a| a.1.is_none());
+        for (i, arg) in positional.iter().enumerate() {
+            invocation.assign_positional_param(&builtin, i, &arg)?;
+        }
+        for arg in named {
+            invocation.assign_named_param(&builtin, &arg)?;
+        }
+
+        invocation.invoke()?
+    } else {
+        throw!(Error::UnknownFunc(name.to_string()));
+    }
 }
 
 #[cfg(test)]
 mod test {
     use super::*;
+
+    fn foobar(_: &str) -> String {
+        "FOOBAR".to_string()
+    }
 
     #[test]
     fn test_validates() {
@@ -185,30 +287,45 @@ mod test {
 
         // Test only no-defaults.
         let mut hsh: HashMap<&'static str, Builtin> = HashMap::default();
-        builtin!(hsh, "foo", foobar, [
-            param!("foo", ParamType::String),
-            param!("bar", ParamType::String)
-            ]);
+        builtin!(
+            hsh,
+            "foo",
+            foobar,
+            [
+                param!("foo", ParamType::String),
+                param!("bar", ParamType::String)
+            ]
+        );
         let builtin = hsh.get("foo").unwrap();
         builtin.validate();
 
         // Test only defaults.
         let mut hsh: HashMap<&'static str, Builtin> = HashMap::default();
-        builtin!(hsh, "foo", foobar, [
-        param!("foo", ParamType::String, ParamValue::Number(2)),
-        param!("bar", ParamType::String, ParamValue::Number(2)),
-        param!("baz", ParamType::String, ParamValue::Number(2))
-        ]);
+        builtin!(
+            hsh,
+            "foo",
+            foobar,
+            [
+                param!("foo", ParamType::String, ParamValue::Number(2)),
+                param!("bar", ParamType::String, ParamValue::Number(2)),
+                param!("baz", ParamType::String, ParamValue::Number(2))
+            ]
+        );
         let builtin = hsh.get("foo").unwrap();
         builtin.validate();
 
         // Test only defaults after no-defaults.
         let mut hsh: HashMap<&'static str, Builtin> = HashMap::default();
-        builtin!(hsh, "foo", foobar, [
-        param!("foo", ParamType::String),
-        param!("baz", ParamType::String, ParamValue::Number(2)),
-        param!("bar", ParamType::String, ParamValue::Number(2))
-        ]);
+        builtin!(
+            hsh,
+            "foo",
+            foobar,
+            [
+                param!("foo", ParamType::String),
+                param!("baz", ParamType::String, ParamValue::Number(2)),
+                param!("bar", ParamType::String, ParamValue::Number(2))
+            ]
+        );
         let builtin = hsh.get("foo").unwrap();
         builtin.validate();
     }
@@ -217,11 +334,16 @@ mod test {
     #[should_panic]
     fn test_defaults_before_non_defaults() {
         let mut hsh: HashMap<&'static str, Builtin> = HashMap::default();
-        builtin!(hsh, "foo", foobar, [
-        param!("foo", ParamType::String),
-        param!("bar", ParamType::String, ParamValue::Number(2)),
-        param!("baz", ParamType::String)
-        ]);
+        builtin!(
+            hsh,
+            "foo",
+            foobar,
+            [
+                param!("foo", ParamType::String),
+                param!("bar", ParamType::String, ParamValue::Number(2)),
+                param!("baz", ParamType::String)
+            ]
+        );
         let builtin = hsh.get("foo").unwrap();
         builtin.validate();
     }
@@ -238,11 +360,21 @@ mod test {
     #[should_panic]
     fn test_no_duplicate_params_names() {
         let mut hsh: HashMap<&'static str, Builtin> = HashMap::default();
-        builtin!(hsh, "foo", foobar, [
-            param!("dup", ParamType::String),
-            param!("dup", ParamType::String)
-            ]);
+        builtin!(
+            hsh,
+            "foo",
+            foobar,
+            [
+                param!("dup", ParamType::String),
+                param!("dup", ParamType::String)
+            ]
+        );
         let builtin = hsh.get("foo").unwrap();
         builtin.validate();
+    }
+
+    #[test]
+    fn test_bad_func_name() {
+        assert!(call("UNKNOWN", vec![]).is_err());
     }
 }

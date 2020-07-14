@@ -1,5 +1,5 @@
 use anyhow::Error;
-use dklib::chart::Chart;
+use dklib::Chart;
 use fehler::throws;
 use std::io::{BufReader, Read, Write};
 use std::path::{Path, PathBuf};

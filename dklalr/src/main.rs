@@ -1,14 +1,18 @@
+use dklalr::Error;
+use fehler::throws;
+
+#[throws]
 fn run_file() {
     let thing = r#"
-    chart = read("foobar.knit")
+    chart = read("charts/jules-braille.knit")
     padded = pad(chart, 5)
-    write(padded)
+    write(padded, "padded_output.knit")
     "#;
 
-    let ast = dklalr::parse_str(thing);
-    println!("THE THING: {:?}", ast);
+    dklalr::run_string(thing)?;
 }
 
+#[throws]
 fn main() {
-    run_file();
+    run_file()?;
 }

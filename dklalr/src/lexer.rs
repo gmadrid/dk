@@ -1,10 +1,7 @@
+use fehler::{throw, throws};
 use std::iter::Peekable;
 use std::str::CharIndices;
-
-pub type Spanned<Token, Loc, Error> = std::result::Result<(Loc, Token, Loc), Error>;
-
-#[derive(Debug, Clone)]
-pub enum LexicalError {}
+use std::fmt::Formatter;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum Token {
@@ -25,11 +22,33 @@ pub enum Token {
     False,
 }
 
-type LexerItem = Spanned<Token, usize, LexicalError>;
+impl std::fmt::Display for Token {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "TOKEN")
+    }
+}
+
+#[derive(thiserror::Error, Clone, Debug)]
+pub enum LexicalError {
+    #[error("Internal Error: {0}")]
+    InternalError(String),
+
+    #[error("Number format error: \"{0}\"")]
+    NumberFormat(String),
+
+    #[error("Unexpected end of file {0}")]
+    UnexpectedEOF(String),
+}
+
+pub type SpannedToken = (usize, Token, usize);
+pub type LexerItem = std::result::Result<SpannedToken, LexicalError>;
 
 pub struct Lexer<'input> {
     chars: Peekable<CharIndices<'input>>,
 }
+
+// To satisfy fehler.
+type Error = LexicalError;
 
 impl<'input> Lexer<'input> {
     pub fn new(input: &'input str) -> Self {
@@ -38,15 +57,21 @@ impl<'input> Lexer<'input> {
         }
     }
 
-    fn single(&mut self, token: Token) -> LexerItem {
+    /// Returns the passed token while advancing the iterator past the single char.
+    /// Expects that the iterator has `next()`.
+    #[throws]
+    fn single(&mut self, token: Token) -> SpannedToken {
         if let Some((i, _)) = self.chars.next() {
-            Ok((i, token, i + 1))
+            (i, token, i + 1)
         } else {
-            todo!()
+            throw!(LexicalError::InternalError("Unexpected EOF.".to_string()))
         }
     }
 
-    fn ident(&mut self) -> LexerItem {
+    /// Returns Token::Ident with the lexed string.
+    /// Expects that the iterator has `next()`.
+    #[throws]
+    fn ident(&mut self) -> SpannedToken {
         let mut ident = String::new();
 
         let mut start = None;
@@ -77,38 +102,51 @@ impl<'input> Lexer<'input> {
             } else {
                 Token::Ident(ident)
             };
-            return Ok((start, token, end));
+            (start, token, end)
         } else {
-            panic!("Invalid input for ident.");
+            // if `start` is still None, then the iterator was empty.
+            throw!(LexicalError::InternalError(
+                "Iterator was empty parsing ident.".to_string()
+            ));
         }
     }
 
-    fn string(&mut self) -> LexerItem {
+    #[throws]
+    fn string(&mut self) -> SpannedToken {
         let mut string = String::new();
 
         if let Some((start, ch)) = self.chars.next() {
             if ch != '"' {
-                panic!("expected '\"' at start of String");
+                throw!(LexicalError::InternalError(
+                    "Expected '\"' at start of String.".to_string()
+                ));
             }
 
             while let Some((i, ch)) = self.chars.next() {
                 if ch == '"' {
-                    return Ok((start, Token::String(string), i + 1));
+                    return (start, Token::String(string), i + 1);
                 } else {
                     string.push(ch);
                 }
             }
-            panic!("unexpected end of input inside string");
+            throw!(LexicalError::UnexpectedEOF(
+                "inside String. Strings must end with '\"'.".to_string()
+            ));
         } else {
-            panic!("unexpected end of input to start string.")
+            throw!(LexicalError::InternalError(
+                "Iterator empty at start of String.".to_string()
+            ));
         }
     }
 
-    fn number(&mut self) -> LexerItem {
+    #[throws]
+    fn number(&mut self) -> SpannedToken {
         let mut number_str = String::new();
         if let Some((start, ch)) = self.chars.next() {
             if !ch.is_ascii_digit() && ch != '-' {
-                panic!("Invalid first char for number.");
+                throw!(LexicalError::InternalError(
+                    "Number must start with digit or '-'".to_string()
+                ));
             }
             number_str.push(ch);
 
@@ -123,12 +161,12 @@ impl<'input> Lexer<'input> {
             }
 
             if let Ok(number) = number_str.parse() {
-                return Ok((start, Token::Number(number), end));
+                return (start, Token::Number(number), end);
             } else {
-                todo!("Put an error here.")
+                throw!(LexicalError::NumberFormat(number_str));
             }
         } else {
-            todo!("Some error return goes here.");
+            throw!(LexicalError::InternalError("Unexpected EOF in number()".to_string()));
         }
     }
 }
@@ -139,18 +177,17 @@ impl<'input> Iterator for Lexer<'input> {
     fn next(&mut self) -> Option<Self::Item> {
         loop {
             match self.chars.peek() {
-                Some((i, ',')) => return Some(self.single(Token::Comma)),
-                Some((i, '=')) => return Some(self.single(Token::Eq)),
-                Some((i, '(')) => return Some(self.single(Token::LParen)),
-                Some((i, ')')) => return Some(self.single(Token::RParen)),
+                Some((_, ',')) => return Some(self.single(Token::Comma)),
+                Some((_, '=')) => return Some(self.single(Token::Eq)),
+                Some((_, '(')) => return Some(self.single(Token::LParen)),
+                Some((_, ')')) => return Some(self.single(Token::RParen)),
 
-                Some((i, '"')) => return Some(self.string()),
+                Some((_, '"')) => return Some(self.string()),
 
-                Some((i, ch)) if ch.is_whitespace() => {
-                    self.chars.next();
-                }
-                Some((i, ch)) if ch.is_ascii_digit() || *ch == '-' => return Some(self.number()),
-                Some((i, ch)) if ch.is_alphabetic() || *ch == '_' => return Some(self.ident()),
+                Some((_, ch)) if ch.is_whitespace() => { self.chars.next(); }
+
+                Some((_, ch)) if ch.is_ascii_digit() || *ch == '-' => return Some(self.number()),
+                Some((_, ch)) if ch.is_alphabetic() || *ch == '_' => return Some(self.ident()),
 
                 None => return None,
                 _ => {
