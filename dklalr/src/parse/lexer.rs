@@ -1,7 +1,7 @@
 use fehler::{throw, throws};
+use std::fmt::Formatter;
 use std::iter::Peekable;
 use std::str::CharIndices;
-use std::fmt::Formatter;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum Token {
@@ -24,7 +24,19 @@ pub enum Token {
 
 impl std::fmt::Display for Token {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "TOKEN")
+        let s = match self {
+            Token::Comma => "','".to_string(),
+            Token::Eq => "'='".to_string(),
+            Token::LParen => "'('".to_string(),
+            Token::RParen => "')'".to_string(),
+            Token::Ident(ident) => format!("Ident[{}]", ident),
+            Token::Number(num) => format!("Number[{}]", num),
+            Token::String(s) => format!("String[{}]", s),
+            Token::Chart => "Chart".to_string(),
+            Token::True => "True".to_string(),
+            Token::False => "False".to_string(),
+        };
+        write!(f, "{}", s)
     }
 }
 
@@ -166,7 +178,9 @@ impl<'input> Lexer<'input> {
                 throw!(LexicalError::NumberFormat(number_str));
             }
         } else {
-            throw!(LexicalError::InternalError("Unexpected EOF in number()".to_string()));
+            throw!(LexicalError::InternalError(
+                "Unexpected EOF in number()".to_string()
+            ));
         }
     }
 }
@@ -184,7 +198,9 @@ impl<'input> Iterator for Lexer<'input> {
 
                 Some((_, '"')) => return Some(self.string()),
 
-                Some((_, ch)) if ch.is_whitespace() => { self.chars.next(); }
+                Some((_, ch)) if ch.is_whitespace() => {
+                    self.chars.next();
+                }
 
                 Some((_, ch)) if ch.is_ascii_digit() || *ch == '-' => return Some(self.number()),
                 Some((_, ch)) if ch.is_alphabetic() || *ch == '_' => return Some(self.ident()),
@@ -200,7 +216,7 @@ impl<'input> Iterator for Lexer<'input> {
 
 #[cfg(test)]
 mod test {
-    use crate::lexer::{Lexer, Token};
+    use crate::parse::lexer::{Lexer, Token};
 
     #[test]
     fn test_singles() {

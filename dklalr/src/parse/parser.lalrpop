@@ -1,7 +1,7 @@
-use crate::ast::{ArgsNode, ArgNode, ArgTailNode, BoolNode, CallNode,
+use crate::parse::ast::{ArgsNode, ArgNode, ArgTailNode, BoolNode, CallNode,
                  CallTailNode, ProgramNode,
                  StmtNode, StmtsNode, StmtTailNode, ValueNode};
-use crate::lexer;
+use crate::parse::lexer;
 
 grammar;
 
@@ -13,7 +13,7 @@ pub Program : ProgramNode = {
     }
 }
 
-pub Stmts : StmtsNode = {
+Stmts : StmtsNode = {
     <s:Stmt> <ss:Stmts> => {
         let mut m_ss = ss;
         // NOTE: we are building this in reverse.
@@ -23,7 +23,7 @@ pub Stmts : StmtsNode = {
     => StmtsNode(Vec::new())
 }
 
-pub Stmt : StmtNode = {
+Stmt : StmtNode = {
     <id:IDENT> <tail:StmtTail> => {
         match tail {
             StmtTailNode::Assign(cn) => StmtNode::Assign(id, cn),
@@ -32,27 +32,27 @@ pub Stmt : StmtNode = {
     }
 }
 
-pub StmtTail : StmtTailNode = {
+StmtTail : StmtTailNode = {
     EQ <Call> => StmtTailNode::Assign(<>),
     CallTail => StmtTailNode::Call(<>.0),
 }
 
-pub Call : CallNode = {
+Call : CallNode = {
     <id:IDENT> <args:CallTail> => {
         CallNode(id.to_string(), args.0)
     }
 }
 
-pub CallTail : CallTailNode = {
+CallTail : CallTailNode = {
     LPAREN <Args> RPAREN => CallTailNode(<>)
 }
 
-pub Args: ArgsNode = {
+Args: ArgsNode = {
     <aas:Args> COMMA <a:Arg> => { let mut maas = aas; maas.0.push(a); maas },
     <Arg> => ArgsNode(vec![<>])
 }
 
-pub Arg: ArgNode = {
+Arg: ArgNode = {
     <v:Value> <tail:ArgTail> => {
         if tail.0.is_some() {
             if let ValueNode::Ident(id) = v {
@@ -66,19 +66,19 @@ pub Arg: ArgNode = {
     }
 }
 
-pub ArgTail: ArgTailNode = {
+ArgTail: ArgTailNode = {
     EQ <Value> => ArgTailNode(Some(<>)),
     => ArgTailNode(None),
 }
 
-pub Value: ValueNode = {
+Value: ValueNode = {
     IDENT => ValueNode::Ident(<>.to_string()),
     NUMBER => ValueNode::Number(<>),
     STRING => ValueNode::String(<>),
     Bool => ValueNode::Bool(<>.0),
 }
 
-pub Bool: BoolNode = {
+Bool: BoolNode = {
     TRUE => BoolNode(true),
     FALSE => BoolNode(false),
 }

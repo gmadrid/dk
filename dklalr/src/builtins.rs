@@ -17,12 +17,13 @@
 
 */
 
-use assure::assure;
-use crate::ast::ArgNode;
-use crate::context::{Context, Value};
+use crate::context::Context;
+use crate::parse::ArgNode;
+use crate::value::Value;
 use crate::Error;
+use assure::assure;
 use dklib::Chart;
-use fehler::{throw,throws};
+use fehler::{throw, throws};
 use lazy_static::lazy_static;
 use std::collections::{HashMap, HashSet};
 use std::fmt::Formatter;
@@ -202,21 +203,28 @@ fn wrap_write(param_values: &HashMap<&str, Value>) -> Value {
 struct Invocation<'a> {
     context: &'a Context,
     builtin: &'a Builtin,
-    param_values: HashMap<&'a str, Value>
+    param_values: HashMap<&'a str, Value>,
 }
 
 impl<'a> Invocation<'a> {
     fn new(context: &'a Context, builtin: &'a Builtin) -> Invocation<'a> {
-        Invocation { context, builtin, param_values: Default::default() }
+        Invocation {
+            context,
+            builtin,
+            param_values: Default::default(),
+        }
     }
 
     #[throws]
     fn assign_positional_param(&mut self, builtin: &Builtin, i: usize, arg: &ArgNode) {
         println!("assign_positional_param: {} {:?}", i, arg.0);
-        assure!(i < builtin.params.len(),
-            Error::TooManyArguments(builtin.name, builtin.params.len(), i));
+        assure!(
+            i < builtin.params.len(),
+            Error::TooManyArguments(builtin.name, builtin.params.len(), i)
+        );
         let param_desc = &builtin.params[i];
-        self.param_values.insert(param_desc.param_name, Value::from_arg(arg, self.context)?);
+        self.param_values
+            .insert(param_desc.param_name, Value::from_arg(arg, self.context)?);
     }
 
     #[throws]
@@ -224,7 +232,8 @@ impl<'a> Invocation<'a> {
         if let ArgNode(value, Some(name)) = arg {
             let param = builtin.params.iter().find(|p| p.param_name == name);
             if let Some(param_desc) = param {
-                self.param_values.insert(param_desc.param_name, Value::from_arg(arg, self.context)?);
+                self.param_values
+                    .insert(param_desc.param_name, Value::from_arg(arg, self.context)?);
             } else {
                 throw!(Error::UnknownParam(builtin.name, name.clone()));
             }

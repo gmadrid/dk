@@ -1,12 +1,12 @@
+use crate::value::Value;
 use fehler::throws;
-use lalrpop_util::lalrpop_mod;
-use crate::context::Value;
+use parse::{Token};
 
-mod ast;
 mod builtins;
 mod context;
 mod interpreter;
-mod lexer;
+mod parse;
+mod value;
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
@@ -19,7 +19,7 @@ pub enum Error {
     #[error("Parse Error: {source}")]
     Parse {
         #[from]
-        source: lalrpop_util::ParseError<usize, lexer::Token, lexer::LexicalError>,
+        source: lalrpop_util::ParseError<usize, Token, parse::LexicalError>,
     },
 
     #[error("Too many arguments provided to function \"{0}\". Expected {1}, got {2}.")]
@@ -35,19 +35,9 @@ pub enum Error {
     UnknownParam(&'static str, String),
 }
 
-lalrpop_mod!(pub parser);
-
 #[throws]
 pub fn run_string(input: &str) {
-    let lexer = lexer::Lexer::new(input);
-    let ast = parser::ProgramParser::new().parse(lexer)?;
-    interpreter::interpret(ast)?;
-}
-
-pub fn parse_str(input: &str) -> ast::ProgramNode {
-    let lexer = lexer::Lexer::new(input);
-    // TODO: yeah this sucks.
-    parser::ProgramParser::new().parse(lexer).unwrap()
+    interpreter::interpret(parse::parse(input)?)?;
 }
 
 // //#[cfg(test)]

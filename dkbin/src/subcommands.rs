@@ -3,7 +3,7 @@ use crate::args::{
     common::{chart_in, chart_out, pipe_chart},
 };
 use anyhow::{anyhow, Error};
-use dklib::{Chart, the_thing};
+use dklib::{the_thing, Chart};
 use fehler::throws;
 use std::path::{Path, PathBuf};
 use structopt::StructOpt;

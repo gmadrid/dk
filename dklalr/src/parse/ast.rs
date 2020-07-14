@@ -1,36 +1,4 @@
-pub trait Checkable {
-    fn check(&self) {
-        // Most things have nothing to check.
-        // If there is a check, just panic! for now.
-        // TODO: get rid of the panic.
-    }
-}
-
-impl<T> Checkable for Vec<T>
-where
-    T: Checkable,
-{
-    fn check(&self) {
-        for t in self.iter() {
-            t.check();
-        }
-    }
-}
-
-impl<T> Checkable for Option<T>
-where
-    T: Checkable,
-{
-    fn check(&self) {
-        self.as_ref().map(|t| t.check());
-    }
-}
-
-impl Checkable for String {
-    fn check(&self) {
-        // TODO: implement a sanity check on the format of the string here?  Maybe?
-    }
-}
+use super::checkable::Checkable;
 
 #[derive(Debug)]
 pub struct ProgramNode(pub Vec<StmtNode>);
@@ -124,7 +92,11 @@ impl Checkable for ValueNode {
     }
 }
 
-// TODO: is it better to add an Ident node?
-
 #[derive(Debug)]
 pub struct BoolNode(pub bool);
+
+impl Checkable for BoolNode {
+    fn check(&self) {
+        // Nothing here to check on.
+    }
+}

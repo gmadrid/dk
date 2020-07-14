@@ -1,6 +1,7 @@
-use crate::ast::{ArgsNode, CallNode, ProgramNode, StmtNode};
 use crate::builtins;
-use crate::context::{Context, Value};
+use crate::context::Context;
+use crate::parse::{ArgsNode, CallNode, ProgramNode, StmtNode};
+use crate::value::Value;
 use crate::Error;
 use fehler::throws;
 
@@ -21,8 +22,12 @@ impl Interpreter {
     #[throws]
     fn eval_stmt(&mut self, stmt: StmtNode) {
         match stmt {
-            StmtNode::Assign(variable, call) => { self.assign(variable, call)?; }
-            StmtNode::Call(call) => { self.call(call)?; }
+            StmtNode::Assign(variable, call) => {
+                self.assign(variable, call)?;
+            }
+            StmtNode::Call(call) => {
+                self.call(call)?;
+            }
         }
     }
 
@@ -35,8 +40,6 @@ impl Interpreter {
     #[throws]
     fn call(&mut self, call: CallNode) -> Value {
         let CallNode(func, ArgsNode(args)) = call;
-
         builtins::call(&func, args, &self.context)?
     }
 }
-
